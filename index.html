@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CubeCoach 3D — Rubik's Cube Solver</title>
+<style>
+:root{--bg:#0c1422;--panel:#18253a;--line:#354b68;--text:#f5f8fd;--muted:#afbdd1;--cyan:#6bdcf0;--green:#8ce5af;--gold:#ffd27a;--red:#ff9e9e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -10%,#2c4565 0,#142239 43%,var(--bg) 82%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{max-width:1240px;margin:auto;padding:22px 22px 12px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h1{font-size:clamp(27px,4vw,39px);line-height:1.1;letter-spacing:-1px;margin:0}h1 span{color:var(--cyan)}.subtitle{color:var(--muted);margin-top:6px}.tag{border:1px solid #4b6688;border-radius:99px;padding:7px 12px;font-size:12px;font-weight:800;color:#dbe8f7}
+main{max-width:1240px;margin:auto;padding:10px 22px 34px;display:grid;grid-template-columns:minmax(275px,.72fr) minmax(440px,1.28fr);gap:18px}.panel{min-width:0;background:linear-gradient(145deg,#1c2b42f2,#121d30f5);border:1px solid var(--line);border-radius:19px;padding:18px;box-shadow:0 16px 44px #0004}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:1.25px;color:var(--cyan);font-weight:850;margin-bottom:5px}h2{font-size:19px;margin:0 0 5px}.intro{font-size:13px;color:var(--muted);margin:0 0 14px}.palette{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:13px 0}.swatch{border:2px solid #ffffff38;border-radius:10px;padding:8px 5px;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:800;cursor:pointer;color:#111827;min-height:42px}.swatch.active{outline:3px solid var(--cyan);outline-offset:2px}.dot{width:15px;height:15px;border-radius:4px;border:1px solid #0004;display:inline-block;flex:0 0 auto}.tip{background:#101b2c;border:1px solid #344963;border-radius:11px;padding:11px 12px;color:#c1cee0;font-size:12px;margin-top:12px}.tip strong{color:#f2f6fc}.view-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}.view-btn{border:1px solid #435a78;background:#253650;color:#e7eff9;border-radius:9px;padding:8px 5px;font-weight:750;cursor:pointer;font-size:12px}.view-btn:hover{background:#304865}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.btn{border:0;border-radius:11px;padding:10px 13px;font-weight:850;cursor:pointer;background:var(--cyan);color:#0c1724;transition:filter .12s,transform .12s}.btn:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}.btn.secondary{background:#344a67;color:#f2f7fc}.btn:disabled{opacity:.4;cursor:not-allowed}.status{min-height:42px;margin-top:12px;font-size:13px;color:var(--gold)}.counts{color:var(--muted);font-size:12px;line-height:1.7;margin-top:7px}.right{display:flex;flex-direction:column}.stage-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.stage-head small{color:var(--muted);font-size:12px}#scene{height:440px;width:100%;border-radius:15px;overflow:hidden;background:radial-gradient(circle at 50% 42%,#314b6b,#111b2b 73%);margin-top:10px;touch-action:none;cursor:grab}#scene:active{cursor:grabbing}#scene canvas{display:block;width:100%;height:100%}.hint3d{text-align:center;color:var(--muted);font-size:11px;margin-top:5px}.view-indicator{text-align:center;margin-top:10px;padding:8px 10px;border:1px solid #415a78;background:#14233a;border-radius:10px;color:#f4f8ff;font-size:13px;font-weight:850;letter-spacing:.2px}.orbit-pad{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(2,36px);gap:5px;justify-content:center;align-items:center;margin:9px auto 1px}.orbit-pad button{height:36px;border:1px solid #48617f;border-radius:9px;background:#263a55;color:#f4f8ff;font-size:18px;font-weight:900;cursor:pointer}.orbit-pad button:hover{background:#365475}.orbit-pad .up{grid-column:2;grid-row:1}.orbit-pad .left{grid-column:1;grid-row:2}.orbit-pad .down{grid-column:2;grid-row:2}.orbit-pad .right{grid-column:3;grid-row:2}.move-card{margin-top:13px;padding:13px 15px;background:#0e1828;border:1px solid #34465e;border-radius:14px;text-align:center}.move-number{font-size:12px;color:var(--muted)}.move-main{font-size:31px;font-weight:950;line-height:1.25;color:var(--cyan);letter-spacing:.5px}.move-instruction{font-size:14px;font-weight:750}.move-detail{font-size:12px;color:var(--muted);margin-top:3px}.controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}.controls .btn{min-width:87px}.progress{height:8px;background:#09111d;border-radius:10px;overflow:hidden;margin-top:14px}.progress>div{height:100%;width:0;background:linear-gradient(90deg,#63d9ef,#9f91ff);transition:width .18s}.readout{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px;color:var(--muted);font-size:12px}.readout select{background:#243650;color:white;border:1px solid #526a89;border-radius:7px;padding:5px}.solution{background:#101a2a;border:1px solid #30445f;border-radius:11px;margin-top:13px;padding:10px 12px;max-height:100px;overflow:auto;font:13px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace;color:#e5edf8;word-break:break-word}.solution .current{color:var(--cyan);font-weight:950}.footer{font-size:11px;color:#91a1b8;margin-top:10px}.hide{display:none!important}
+@media(max-width:900px){main{grid-template-columns:1fr;padding:10px 14px 28px}header{padding:18px 14px 10px}#scene{height:380px}}@media(max-width:480px){.panel{padding:14px}#scene{height:330px}.view-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.swatch{font-size:12px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/cube.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cubejs@1.3.2/lib/solve.js"></script>
+</head>
+<body>
+<header><div><h1>🧩 CubeCoach <span>3D</span></h1><div class="subtitle">Match the stickers on your scrambled cube — then watch a fast, checked solution play itself.</div></div><div class="tag">3 × 3 × 3 · 3D INPUT + SOLVER</div></header>
+<main>
+<section class="panel">
+ <div class="kicker">Step 1 · Enter your cube on the model</div>
+ <h2>Paint the 3D cube</h2>
+ <p class="intro">The cube starts with its six normal Rubik’s Cube colours. Choose a colour, then click only the stickers whose colours are different on your scrambled cube. Each click changes that sticker on the 3D model immediately. Use ← → ↑ ↓ to rotate the whole cube and reveal the other faces. For the standard colour layout, hold your real cube with white on top, green in front and red on the right.</p>
+ <div class="palette" id="palette"></div><div class="counts" id="brushState">Selected paint colour: White</div>
+ <div class="tip"><strong>How to enter it:</strong> The 3D cube starts solved and fully coloured. Select a colour and click a sticker only when that sticker is a different colour on your real scrambled cube. You do not need to repaint stickers that already match. Rotate the cube to reach all six faces. Keep the centre colours in the same positions as your real cube; they identify the faces.</div>
+ <div class="kicker" style="margin-top:17px">Look directly at a face</div>
+ <div class="view-grid">
+  <button class="view-btn" data-view="F">Green · F</button><button class="view-btn" data-view="R">Red · R</button><button class="view-btn" data-view="B">Blue · B</button>
+  <button class="view-btn" data-view="L">Orange · L</button><button class="view-btn" data-view="U">White · U</button><button class="view-btn" data-view="D">Yellow · D</button>
+ </div>
+ <div class="counts" id="counts">Each colour should appear 9 times. The centre stickers identify the six faces.</div>
+ <div class="actions">
+  <button class="btn" id="solve">Solve this cube</button>
+  <button class="btn secondary" id="demo">Load demo scramble</button>
+  <button class="btn secondary" id="reset">Reset to solved colours</button>
+  <button class="btn secondary hide" id="edit">Edit colours</button>
+ </div>
+ <div class="status" id="status" role="status">The cube starts with normal colours. Change the stickers that differ from your scrambled cube.</div>
+ <div class="tip"><strong>Important:</strong> For a standard cube, the usual centre layout is white opposite yellow, red opposite orange, and green opposite blue. This solver reads the centre colours you entered, so it can work out which face each colour belongs to.</div>
+</section>
+<section class="panel right">
+ <div class="stage-head"><div><div class="kicker">Step 2 · Fast solve and follow</div><h2>Your cube — animated moves</h2><small>The same 3D cube you painted performs the fast, checked solution automatically.</small></div><small id="counter">Input mode</small></div>
+ <div id="scene" aria-label="Interactive three-dimensional Rubik's Cube"></div>
+ <div class="view-indicator" id="viewIndicator">Currently showing: WHITE face (U)</div>
+ <div class="hint3d" id="canvasHint">Click any sticker that differs from your real cube · changes appear immediately</div>
+ <div class="orbit-pad" aria-label="Move to an adjacent cube face"><button class="up" data-orbit="up" aria-label="Show the face above">↑</button><button class="left" data-orbit="left" aria-label="Show the face to the left">←</button><button class="down" data-orbit="down" aria-label="Show the face below">↓</button><button class="right" data-orbit="right" aria-label="Show the face to the right">→</button></div>
+ <div class="move-card"><div class="move-number" id="moveNumber">Ready for your colours</div><div class="move-main" id="move">3D CUBE</div><div class="move-instruction" id="instruction">Change the stickers that differ from your scrambled cube, then press “Solve this cube”.</div><div class="move-detail" id="detail">A fast two-phase solution will be checked against all 54 stickers before playback.</div></div>
+ <div class="controls"><button class="btn secondary" id="previous" disabled>← Previous</button><button class="btn" id="play" disabled>▶ Play slowly</button><button class="btn secondary" id="next" disabled>Next move →</button><button class="btn secondary" id="pause" disabled>Ⅱ Pause</button><button class="btn secondary" id="restart" disabled>↺ Restart</button></div>
+ <div class="progress"><div id="bar"></div></div>
+ <div class="readout"><span id="stepCount">0 / 0 moves completed</span><label>Animation speed <select id="speed"><option value="1600" selected>Very slow</option><option value="1100">Slow</option><option value="700">Normal</option><option value="400">Fast</option></select></label></div>
+ <div class="solution" id="solution">Move instructions will appear here after the cube is checked.</div>
+ <div class="footer">Keyboard: ← / → / ↑ / ↓ rotate the whole cube by 90° to reveal an adjacent face. Starting on white, press ↓ to show green. These controls do not turn a solving layer or change the cube's scrambled state. R/L = right/left · U/D = top/bottom · F/B = front/back.</div>
+</section>
+</main>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const FACES=['U','R','F','D','L','B']; // cube.js facelet order: URFDLB
+const BLANK='?';
+const COLORS={W:{name:'White',hex:'#f3f3ee'},Y:{name:'Yellow',hex:'#f5d51c'},R:{name:'Red',hex:'#d92734'},O:{name:'Orange',hex:'#f28a24'},G:{name:'Green',hex:'#16a45d'},B:{name:'Blue',hex:'#2865d8'},'?':{name:'Not painted',hex:'#657386'}};
+const DEFAULT={U:'W',R:'R',F:'G',D:'Y',L:'O',B:'B'};
+const GEOM={
+ U:{n:[0,1,0],right:[1,0,0],down:[0,0,1],rot:[-Math.PI/2,0,0]},
+ R:{n:[1,0,0],right:[0,0,-1],down:[0,-1,0],rot:[0,Math.PI/2,0]},
+ F:{n:[0,0,1],right:[1,0,0],down:[0,-1,0],rot:[0,0,0]},
+ D:{n:[0,-1,0],right:[1,0,0],down:[0,0,-1],rot:[Math.PI/2,0,0]},
+ L:{n:[-1,0,0],right:[0,0,1],down:[0,-1,0],rot:[0,-Math.PI/2,0]},
+ B:{n:[0,0,-1],right:[-1,0,0],down:[0,-1,0],rot:[0,Math.PI,0]}
+};
+const $=id=>document.getElementById(id);
+let selected='W',facelets={},solution=[],stepIndex=0,playing=false,busy=false,playTimer=null,solverReady=false,animationVersion=0,editing=true;
+let cubies=[],stickerMeshes=[],stickerMap={},dragging=false,pointerStart=null,lastPointer=null,alreadySolved=false;
+const palette=$('palette'),status=$('status');
+function setStatus(msg,kind='warn'){status.textContent=msg;status.style.color=kind==='good'?'#8ce5af':kind==='error'?'#ff9e9e':'#ffd27a';}
+function resetFacelets(){facelets={};for(const f of FACES)facelets[f]=Array(9).fill(DEFAULT[f]);alreadySolved=false;}
+function vec(a){return new THREE.Vector3(a[0],a[1],a[2]);}
+function renderPalette(){palette.innerHTML='';for(const [code,data] of Object.entries(COLORS).filter(([code])=>code!==BLANK)){ const b=document.createElement('button');b.className='swatch'+(selected===code?' active':'');b.style.background=data.hex;b.setAttribute('aria-pressed',selected===code?'true':'false');b.innerHTML=`<span class="dot" style="background:${data.hex}"></span>${data.name}`;b.addEventListener('click',()=>{selected=code;renderPalette()});palette.appendChild(b);}if($('brushState'))$('brushState').textContent=`Selected paint colour: ${COLORS[selected].name} · click a sticker on the 3D cube`;}
+function updateColourCounts(){const counts={};let changed=0;for(const f of FACES)for(let i=0;i<9;i++){const c=facelets[f][i];counts[c]=(counts[c]||0)+1;if(c!==DEFAULT[f])changed++;}const parts=Object.keys(COLORS).filter(c=>c!==BLANK).map(c=>`${COLORS[c].name}: ${counts[c]||0}/9`);$('counts').textContent=`Changed stickers: ${changed}  ·  `+parts.join('  ·  '); }
+function stickerRotation(face){const r=GEOM[face].rot;return new THREE.Euler(r[0],r[1],r[2]);}
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,0,8.2);camera.up.set(0,1,0);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setClearColor(0x000000,0);renderer.outputColorSpace=THREE.SRGBColorSpace;$('scene').appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe5f1ff,0x28354b,2.1));const keyLight=new THREE.DirectionalLight(0xffffff,2.25);keyLight.position.set(5,8,7);scene.add(keyLight);const fillLight=new THREE.DirectionalLight(0x8ebcff,.7);fillLight.position.set(-5,2,-4);scene.add(fillLight);
+const cubeRoot=new THREE.Group();scene.add(cubeRoot);
+const bodyMat=new THREE.MeshStandardMaterial({color:0x10141c,roughness:.48,metalness:.02});
+const stickerMats={};for(const [code,data] of Object.entries(COLORS))stickerMats[code]=new THREE.MeshStandardMaterial({color:data.hex,roughness:.34,metalness:.01});
+const bodyGeo=new THREE.BoxGeometry(.98,.98,.98),stickerGeo=new THREE.PlaneGeometry(.84,.84);
+function buildCubeFromFacelets(state){
+ animationVersion++;busy=false;while(cubeRoot.children.length)cubeRoot.remove(cubeRoot.children[0]);cubies=[];stickerMeshes=[];stickerMap={};
+ const lookup={};
+ for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
+  const g=new THREE.Group();g.position.set(x*1.02,y*1.02,z*1.02);g.add(new THREE.Mesh(bodyGeo,bodyMat));g.userData.grid={x,y,z};cubeRoot.add(g);cubies.push(g);lookup[`${x},${y},${z}`]=g;
+ }
+ for(const f of FACES){const basis=GEOM[f];for(let i=0;i<9;i++){
+  const row=Math.floor(i/3),col=i%3;const p=vec(basis.n).addScaledVector(vec(basis.right),col-1).addScaledVector(vec(basis.down),row-1);const key=`${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`;const cubie=lookup[key];
+  const sticker=new THREE.Mesh(stickerGeo,stickerMats[state[f][i]]);sticker.position.copy(vec(basis.n)).multiplyScalar(.502);sticker.rotation.copy(stickerRotation(f));sticker.userData={face:f,index:i,colour:state[f][i]};cubie.add(sticker);stickerMeshes.push(sticker);stickerMap[`${f}${i}`]=sticker;
+ }}
+ cubeRoot.rotation.set(Math.PI/2,0,0);cubeRoot.rotation.order='XYZ';
+ updateViewIndicator();
+}
+const FACE_POSITION={U:'top',R:'right',F:'front',D:'bottom',L:'left',B:'back'};
+let navigationBusy=false;
+function getFrontFace(){
+ const towardCamera=new THREE.Vector3(0,0,1);let best='F',bestDot=-Infinity;
+ for(const f of FACES){const normal=vec(GEOM[f].n).applyQuaternion(cubeRoot.quaternion).normalize();const dot=normal.dot(towardCamera);if(dot>bestDot){bestDot=dot;best=f;}}
+ return best;
+}
+function updateViewIndicator(){
+ const f=getFrontFace(),colour=facelets[f]?.[4]||DEFAULT[f],name=COLORS[colour]?.name||'Unknown';
+ $('viewIndicator').textContent=`Currently showing: ${name.toUpperCase()} face (${f}) · ${FACE_POSITION[f]}`;
+}
+function animateCubeOrientation(axis,angle){
+ if(navigationBusy||busy)return;
+ navigationBusy=true;
+ const start=cubeRoot.quaternion.clone();
+ const worldTurn=new THREE.Quaternion().setFromAxisAngle(axis,angle);
+ const target=worldTurn.multiply(start.clone());
+ const begin=performance.now(),duration=420;
+ function frame(now){
+  const t=Math.min(1,(now-begin)/duration),eased=1-Math.pow(1-t,3);
+  cubeRoot.quaternion.slerpQuaternions(start,target,eased);
+  if(t<1){requestAnimationFrame(frame);return;}
+  cubeRoot.quaternion.copy(target);navigationBusy=false;updateViewIndicator();
+ }
+ requestAnimationFrame(frame);
+}
+function navigateFace(direction){
+ const X=new THREE.Vector3(1,0,0),Y=new THREE.Vector3(0,1,0);
+ // With white (U) initially facing forward, ↓ reveals green (F).
+ const turns={down:[X,-Math.PI/2],up:[X,Math.PI/2],left:[Y,Math.PI/2],right:[Y,-Math.PI/2]};
+ const turn=turns[direction];if(turn)animateCubeOrientation(turn[0],turn[1]);
+}
+for(const b of document.querySelectorAll('[data-orbit]'))b.addEventListener('click',()=>navigateFace(b.dataset.orbit));
+function faceViewQuaternion(face){
+ const g=GEOM[face],right=vec(g.right),up=vec(g.down).negate(),normal=vec(g.n);
+ const basis=new THREE.Matrix4().makeBasis(right,up,normal);
+ return new THREE.Quaternion().setFromRotationMatrix(basis).invert();
+}
+function setView(view){
+ if(view==='3D')view='U';
+ const target=faceViewQuaternion(view);if(navigationBusy||busy)return;
+ navigationBusy=true;const start=cubeRoot.quaternion.clone(),begin=performance.now(),duration=420;
+ function frame(now){const t=Math.min(1,(now-begin)/duration),eased=1-Math.pow(1-t,3);cubeRoot.quaternion.slerpQuaternions(start,target,eased);if(t<1){requestAnimationFrame(frame);return;}cubeRoot.quaternion.copy(target);navigationBusy=false;updateViewIndicator();}
+ requestAnimationFrame(frame);
+}
+for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>setView(b.dataset.view));
+// Arrow keys turn the complete cube to an adjacent face; they never turn a solving layer.
+document.addEventListener('keydown',e=>{
+ const tag=(e.target&&e.target.tagName||'').toUpperCase();
+ if(['INPUT','TEXTAREA','SELECT'].includes(tag)||e.target?.isContentEditable)return;
+ const keyMap={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
+ const direction=keyMap[e.key];if(!direction)return;
+ e.preventDefault();navigateFace(direction);
+});
+function setViewSize(){const box=$('scene').getBoundingClientRect();if(!box.width||!box.height)return;camera.aspect=box.width/box.height;camera.updateProjectionMatrix();renderer.setSize(box.width,box.height,false);}
+new ResizeObserver(setViewSize).observe($('scene'));setViewSize();
+function render(){requestAnimationFrame(render);renderer.render(scene,camera);}render();
+const raycaster=new THREE.Raycaster(),pointerNdc=new THREE.Vector2();
+function paintAt(clientX,clientY){
+ if(!editing||busy)return;const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;pointerNdc.x=((clientX-rect.left)/rect.width)*2-1;pointerNdc.y=-((clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointerNdc,camera);scene.updateMatrixWorld(true);const hits=raycaster.intersectObjects(cubies,true).filter(hit=>hit.object.userData&&hit.object.userData.face);if(!hits.length){setStatus('No sticker selected. Click directly on a coloured sticker on the visible face.','warn');return;}
+ const sticker=hits[0].object;const {face,index}=sticker.userData;facelets[face][index]=selected;sticker.userData.colour=selected;sticker.material=stickerMats[selected];alreadySolved=false;updateColourCounts();updateViewIndicator();invalidateSolution();const faceName=COLORS[facelets[face][4]]?.name||'face with an unknown centre';setStatus(`${COLORS[selected].name} painted onto ${faceName} face · sticker ${index+1}/9.`, 'good');
+}
+renderer.domElement.addEventListener('pointerdown',e=>{if(busy||navigationBusy)return;dragging=true;pointerStart={x:e.clientX,y:e.clientY};lastPointer={x:e.clientX,y:e.clientY};renderer.domElement.setPointerCapture(e.pointerId);});
+renderer.domElement.addEventListener('pointermove',e=>{if(!dragging||!lastPointer)return;lastPointer={x:e.clientX,y:e.clientY};});
+renderer.domElement.addEventListener('pointerup',e=>{if(!dragging)return;const dx=e.clientX-(pointerStart?.x??e.clientX),dy=e.clientY-(pointerStart?.y??e.clientY),moved=Math.hypot(dx,dy);dragging=false;lastPointer=null;if(moved<8)paintAt(e.clientX,e.clientY);else if(Math.abs(dx)>Math.abs(dy))navigateFace(dx<0?'left':'right');else navigateFace(dy<0?'down':'up');pointerStart=null;});
+renderer.domElement.addEventListener('pointercancel',()=>{dragging=false;pointerStart=null;lastPointer=null;});
+function invalidateSolution(){alreadySolved=false;if(solution.length||!editing){stopPlayback();solution=[];stepIndex=0;$('solution').textContent='Move instructions will appear here after the cube is checked.';setControlState(false);updateProgress();}}
+function getSolverString(){
+ const unpainted=FACES.reduce((n,f)=>n+facelets[f].filter(c=>c===BLANK).length,0);if(unpainted)throw new Error(`${unpainted} stickers are still grey. Paint all 54 stickers before solving.`);
+ const centres={};for(const f of FACES){const c=facelets[f][4];if(!COLORS[c]||c===BLANK)throw new Error('Paint all six centre stickers first.');if(centres[c])throw new Error('The six centre stickers must all be different colours. Check the middle sticker on each face.');centres[c]=f;}
+ const counts={};for(const f of FACES)for(const c of facelets[f])counts[c]=(counts[c]||0)+1;for(const c of Object.keys(COLORS).filter(c=>c!==BLANK))if(counts[c]!==9)throw new Error(`${COLORS[c].name} appears ${counts[c]||0} times. Each colour must appear exactly 9 times.`);
+ const colourToFace={};for(const f of FACES)colourToFace[facelets[f][4]]=f;return FACES.map(f=>facelets[f].map(c=>{if(!colourToFace[c])throw new Error('A sticker colour does not match one of the six centre colours.');return colourToFace[c];}).join('')).join('');
+}
+function parseMove(move){const face=move[0],suffix=move.slice(1),axis={R:'x',L:'x',U:'y',D:'y',F:'z',B:'z'}[face],layer={R:1,L:-1,U:1,D:-1,F:1,B:-1}[face];let sign={R:-1,L:1,U:-1,D:1,F:-1,B:1}[face];if(suffix==="'")sign*=-1;return {face,axis,layer,sign,turns:suffix==='2'?2:1};}
+function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
+function simulateMovesOnStickers(startState,moves){
+ const stickers=[];for(const f of FACES){const g=GEOM[f];for(let i=0;i<9;i++){const row=Math.floor(i/3),col=i%3,pos=g.n.map((v,k)=>v+g.right[k]*(col-1)+g.down[k]*(row-1));stickers.push({pos,normal:[...g.n],colour:startState[f][i]});}}
+ for(const move of moves){const parsed=parseMove(move),axisIndex={x:0,y:1,z:2}[parsed.axis];for(const sticker of stickers){if(sticker.pos[axisIndex]!==parsed.layer)continue;for(let t=0;t<parsed.turns;t++){sticker.pos=rotateQuarter(sticker.pos,parsed.axis,parsed.sign);sticker.normal=rotateQuarter(sticker.normal,parsed.axis,parsed.sign);}}}
+ const normalFace={};for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;const result={};for(const f of FACES)result[f]=Array(9).fill(null);
+ for(const sticker of stickers){const f=normalFace[sticker.normal.join(',')];if(!f)throw new Error('Internal sticker-check error.');const g=GEOM[f],col=sticker.pos.reduce((sum,v,k)=>sum+v*g.right[k],0)+1,row=sticker.pos.reduce((sum,v,k)=>sum+v*g.down[k],0)+1;result[f][row*3+col]=sticker.colour;}
+ return result;
+}
+function stateToSolverString(state,colourToFace){return FACES.map(f=>state[f].map(c=>colourToFace[c]).join('')).join('');}
+function roundedVector(v){return [Math.round(v.x),Math.round(v.y),Math.round(v.z)];}
+function getRenderedFacelets(){
+ cubeRoot.updateMatrixWorld(true);const inverseRoot=cubeRoot.matrixWorld.clone().invert(),rootQ=new THREE.Quaternion();cubeRoot.getWorldQuaternion(rootQ);const inverseRootQ=rootQ.clone().invert();
+ const normalFace={};for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;const result={};for(const f of FACES)result[f]=Array(9).fill(null);
+ for(const sticker of stickerMeshes){const worldPos=new THREE.Vector3();sticker.getWorldPosition(worldPos);const pos=worldPos.applyMatrix4(inverseRoot);const worldQ=new THREE.Quaternion();sticker.getWorldQuaternion(worldQ);const localQ=inverseRootQ.clone().multiply(worldQ);const normal=roundedVector(new THREE.Vector3(0,0,1).applyQuaternion(localQ));const f=normalFace[normal.join(',')];if(!f)throw new Error('3D model check: sticker is facing an unknown direction.');const g=GEOM[f],col=Math.round(pos.dot(vec(g.right)))+1,row=Math.round(pos.dot(vec(g.down)))+1;if(row<0||row>2||col<0||col>2)throw new Error('3D model check: sticker moved outside its face grid.');result[f][row*3+col]=sticker.userData.colour;}
+ return result;
+}
+function statesMatch(a,b){return FACES.every(f=>a[f].every((c,i)=>c===b[f][i]));}
+function verifyRenderedStep(){const expected=simulateMovesOnStickers(facelets,solution.slice(0,stepIndex));const actual=getRenderedFacelets();return statesMatch(expected,actual);}
+function snapObjectToGrid(obj){
+ obj.position.set(Math.round(obj.position.x/1.02)*1.02,Math.round(obj.position.y/1.02)*1.02,Math.round(obj.position.z/1.02)*1.02);
+ const m=new THREE.Matrix4().makeRotationFromQuaternion(obj.quaternion);const x=new THREE.Vector3().setFromMatrixColumn(m,0),y=new THREE.Vector3().setFromMatrixColumn(m,1),z=new THREE.Vector3().setFromMatrixColumn(m,2);x.set(Math.round(x.x),Math.round(x.y),Math.round(x.z));y.set(Math.round(y.x),Math.round(y.y),Math.round(y.z));z.set(Math.round(z.x),Math.round(z.y),Math.round(z.z));obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));
+}
+function animateMove(move,done){
+ const version=animationVersion,{axis,layer,sign,turns}=parseMove(move),pivot=new THREE.Group();cubeRoot.add(pivot);const moving=cubies.filter(g=>Math.round(g.position[axis]/1.02)===layer);moving.forEach(g=>pivot.attach(g));const target=sign*Math.PI/2*turns,duration=Number($('speed').value)*turns,start=performance.now();
+ function frame(now){if(version!==animationVersion)return;const t=Math.min(1,(now-start)/duration);pivot.rotation[axis]=target*(1-Math.pow(1-t,3));if(t<1){requestAnimationFrame(frame);return;}pivot.updateMatrixWorld(true);for(const g of moving){cubeRoot.attach(g);snapObjectToGrid(g);}cubeRoot.remove(pivot);done?.();}
+ requestAnimationFrame(frame);
+}
+function inverseMove(m){if(m.endsWith('2'))return m;if(m.endsWith("'"))return m[0];return m[0]+"'";}
+const FACE_NAMES={R:'right',L:'left',U:'top',D:'bottom',F:'front',B:'back'};
+function describeMove(m){
+ const face=m[0],suffix=m.slice(1),centre=facelets[face]?.[4],colour=COLORS[centre]?.name||'unknown-colour';
+ if(suffix==='2')return `Turn the ${colour} face (${FACE_NAMES[face]}) 180° — a half-turn (two quarter-turns).`;
+ return `Turn the ${colour} face (${FACE_NAMES[face]}) 90° ${suffix==="'"?'anticlockwise':'clockwise'}, looking straight at that face.`;
+}
+function updateProgress(){const total=solution.length;$('counter').textContent=total?`${stepIndex} / ${total} moves`:(alreadySolved?'Already solved':(editing?'Input mode':'Ready'));$('stepCount').textContent=`${stepIndex} / ${total} moves completed`;$('bar').style.width=total?`${stepIndex/total*100}%`:'0%';if(!total){$('moveNumber').textContent=alreadySolved?'0 moves needed':'Ready for your colours';$('move').textContent=alreadySolved?'SOLVED! 🎉':'3D CUBE';$('move').style.color=alreadySolved?'var(--green)':'var(--cyan)';$('instruction').textContent=alreadySolved?'Your cube is already completely solved. No turns are needed.':'Change the stickers that differ from your scrambled cube, then press “Solve this cube”.';$('detail').textContent=alreadySolved?'All six faces are already uniform.':'The app will find a fast, near-optimal solution and verify all 54 stickers.';return;}if(stepIndex>=total){$('moveNumber').textContent=`${total} / ${total} moves completed`;$('move').textContent='SOLVED! 🎉';$('move').style.color='var(--green)';$('instruction').textContent='All six faces are solved.';$('detail').textContent='The animated 3D cube has passed the final 54-sticker check.';return;}const m=solution[stepIndex],moveColour=facelets[m[0]][4],colourName=COLORS[moveColour].name.toUpperCase();$('moveNumber').textContent=`Move ${stepIndex+1} of ${total}`;$('move').textContent=`${m} · ${colourName}`;$('move').style.color=COLORS[moveColour].hex;$('instruction').textContent=describeMove(m);$('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';}
+function setControlState(enabled){$('previous').disabled=!enabled||stepIndex===0||busy;$('play').disabled=!enabled||busy;$('next').disabled=!enabled||stepIndex>=solution.length||busy;$('pause').disabled=!enabled||!playing;$('restart').disabled=!enabled||busy;}
+function stopPlayback(){playing=false;clearTimeout(playTimer);$('play').textContent='▶ Play slowly';if(solution.length)setControlState(true);}
+function finishAndVerify(){stopPlayback();try{const modelOk=verifyRenderedStep(),finalState=getRenderedFacelets();const faceSolved=FACES.every(f=>finalState[f].every(c=>c===finalState[f][4]));if(!modelOk||!faceSolved){setStatus('The 3D model failed its final check. The cube has NOT been marked solved. Press Restart and try again.','error');return;}setStatus('Verified: all 54 stickers are in the correct solved positions. All 6 faces are solved! 🎉','good');}catch(e){setStatus(`Final 3D verification failed: ${e.message}`,'error');}}
+function doForward(){if(busy||stepIndex>=solution.length)return;busy=true;setControlState(true);const move=solution[stepIndex];animateMove(move,()=>{stepIndex++;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The 3D animation did not match the verified move sequence. The cube has been stopped rather than showing a false result.','error');setControlState(false);return;}setControlState(true);if(stepIndex>=solution.length)finishAndVerify();else if(playing)playTimer=setTimeout(doForward,350);});}
+function doBackward(){if(busy||stepIndex<=0)return;busy=true;setControlState(true);const move=inverseMove(solution[stepIndex-1]);animateMove(move,()=>{stepIndex--;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The previous-move animation failed its 3D check. Press Restart to return to the starting cube.','error');setControlState(false);return;}setControlState(true);});}
+$('solve').addEventListener('click',()=>{
+ stopPlayback();
+ const changedCount=FACES.reduce((n,f)=>n+facelets[f].filter((c,i)=>c!==DEFAULT[f]).length,0);
+ if(changedCount===0){setStatus('No scrambled colours have been entered yet. This 3D cube is still in its normal solved colour layout. Change the stickers to match your scrambled cube, then try again.','error');return;}
+ let faceString,colourToFace={};try{faceString=getSolverString();for(const f of FACES)colourToFace[facelets[f][4]]=f;}catch(e){setStatus(e.message,'error');return;}
+ if(!window.Cube||typeof window.Cube.initSolver!=='function'){setStatus('The solving engine did not load. Check your internet connection and reload this page.','error');return;}
+ setStatus('Checking the cube and preparing the solving engine…');$('solve').disabled=true;
+ setTimeout(()=>{try{
+  if(!solverReady){setStatus('First-time setup: preparing the fast two-phase solver tables…');Cube.initSolver();solverReady=true;}
+  const cube=Cube.fromString(faceString);
+  // cube.js can normalize impossible input states; a changed round-trip means the entered stickers cannot exist on a real cube.
+  if(cube.asString()!==faceString)throw new Error('These colours do not describe a physically possible Rubik’s Cube. Check that every sticker and centre is entered in the correct position.');
+  let algorithm='';
+  if(!cube.isSolved()){
+   // Catch very short scrambles with an exact shallow search, then use Kociemba's fast two-phase solver (up to 22 moves).
+   for(let depth=1;depth<=4;depth++){try{const candidate=cube.solve(depth);if(candidate!==null&&candidate!==undefined){algorithm=candidate;break;}}catch(_){/* no solution within this short depth */}}
+   if(!algorithm)algorithm=cube.solve(22);
+   if(algorithm===null||algorithm===undefined)throw new Error('No solution was found. Check the 3D colours and make sure the cube is physically possible.');
+  }
+  const moves=algorithm.trim()?algorithm.trim().split(/\s+/):[];const verification=Cube.fromString(faceString);if(moves.length)verification.move(algorithm);if(!verification.isSolved())throw new Error('The solver did not verify the complete cube. No animation was started.');
+  const simulated=simulateMovesOnStickers(facelets,moves);const simulatedString=stateToSolverString(simulated,colourToFace);if(simulatedString!==verification.asString())throw new Error('The independent 3D move check disagrees with the solver. No animation was started.');if(!FACES.every(f=>simulated[f].every(c=>c===facelets[f][4])))throw new Error('The full 54-sticker check did not end with six uniform faces. No animation was started.');
+  solution=moves;stepIndex=0;editing=false;alreadySolved=moves.length===0;$('edit').classList.remove('hide');$('canvasHint').textContent='The same 3D cube is performing the solution. Each move is shown with the actual centre colour and turn angle.';buildCubeFromFacelets(facelets);
+  if(!statesMatch(facelets,getRenderedFacelets()))throw new Error('The 3D cube display does not match the 54 entered stickers. No solution animation was started.');
+  setStatus(solution.length?`Fast solution found and verified: ${solution.length} moves. Starting the 3D animation now…`:'Your cube is already completely solved. No moves are needed.','good');$('solution').textContent=solution.length?`FAST, NEAR-OPTIMAL SOLUTION · ${solution.length} moves
+`+solution.join('   '):'Already solved — no moves needed.';updateProgress();setControlState(solution.length>0);$('restart').disabled=!solution.length;
+  if(solution.length){playing=true;$('play').textContent='▶ Playing';setControlState(true);setTimeout(()=>{if(playing)doForward();},300);}else{setControlState(false);}
+ }catch(e){setStatus(e.message||'The cube could not be solved. Check the stickers you painted.','error');}finally{$('solve').disabled=false;}},50);
+});
+$('play').addEventListener('click',()=>{if(!solution.length)return;if(stepIndex>=solution.length){stepIndex=0;buildCubeFromFacelets(facelets);updateProgress();}playing=true;$('play').textContent='▶ Playing';setControlState(true);doForward();});
+$('pause').addEventListener('click',()=>stopPlayback());
+$('next').addEventListener('click',()=>{stopPlayback();doForward();});
+$('previous').addEventListener('click',()=>{stopPlayback();doBackward();});
+$('restart').addEventListener('click',()=>{stopPlayback();stepIndex=0;buildCubeFromFacelets(facelets);updateProgress();setControlState(true);setStatus('Back at the exact scrambled starting colours. Press Play slowly to watch again.','good');});
+$('edit').addEventListener('click',()=>{stopPlayback();solution=[];stepIndex=0;alreadySolved=false;editing=true;$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';buildCubeFromFacelets(facelets);updateProgress();setControlState(false);$('canvasHint').textContent='Click stickers that differ from your real cube · swipe or press ← → ↑ ↓ to reveal the other faces';setStatus('Colour editing is enabled. Change the stickers directly on the 3D cube.');});
+$('reset').addEventListener('click',()=>{stopPlayback();solution=[];stepIndex=0;editing=true;resetFacelets();buildCubeFromFacelets(facelets);$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';updateColourCounts();updateProgress();setControlState(false);$('canvasHint').textContent='Click a sticker that differs from your real cube · every click updates the 3D model';setStatus('Cube reset to its normal solved colours. Change only the stickers that differ from your scrambled cube.');updateViewIndicator();});
+$('demo').addEventListener('click',()=>{alreadySolved=false;if(!window.Cube){setStatus('The solver engine is still loading. Check your internet connection.','error');return;}try{const demo=new Cube();demo.move("R U R' F2 D L U2 B' R2 F' D2");const string=demo.asString(),toColour={U:DEFAULT.U,R:DEFAULT.R,F:DEFAULT.F,D:DEFAULT.D,L:DEFAULT.L,B:DEFAULT.B};let i=0;for(const f of FACES){facelets[f]=string.slice(i,i+9).split('').map(letter=>toColour[letter]);i+=9;}stopPlayback();solution=[];stepIndex=0;editing=true;buildCubeFromFacelets(facelets);$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';updateColourCounts();updateProgress();setControlState(false);$('canvasHint').textContent='Demo scramble loaded. Press Solve this cube. Use ← → ↑ ↓ to move between faces with animation.';setStatus('Demo scramble painted onto the 3D model. Press “Solve this cube” to solve it.','good');}catch(e){setStatus('Could not load the demo scramble. Reload the page and try again.','error');}});
+
+resetFacelets();renderPalette();updateColourCounts();buildCubeFromFacelets(facelets);updateProgress();setControlState(false);updateViewIndicator();setStatus('Ready: the cube starts with its normal colours. Change the stickers that differ from your scrambled cube.');
+</script>
+</body>
+</html>
