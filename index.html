@@ -953,7 +953,15 @@ function updateProgress(){
   return;
  }
 
- c
+  const m=solution[stepIndex];
+ const parsed=parseMove(m);
+ const face=parsed.face;
+
+ const moveLabel=parsed.rotation
+  ?'WHOLE CUBE'
+  :parsed.slice
+   ?'INNER LAYER'
+   :parsed.wide
     ?'WIDE TURN'
     :cubeSize===3
      ?COLORS[facelets[face][4]].name.toUpperCase()
@@ -968,6 +976,7 @@ function updateProgress(){
  $('move').style.color=moveColor;
  $('instruction').textContent=describeMove(m);
  $('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';
+}
 }
 function stopPlayback(){playing=false;clearTimeout(playTimer);$('play').textContent='▶ Play slowly';if(solution.length)setControlState(true);}
 function finishAndVerify(){
