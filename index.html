@@ -379,9 +379,44 @@ function simulateMovesOnStickers(startState,moves){
 function stateToSolverString(state,colourToFace){return FACES.map(f=>state[f].map(c=>colourToFace[c]).join('')).join('');}
 function roundedVector(v){return [Math.round(v.x),Math.round(v.y),Math.round(v.z)];}
 function getRenderedFacelets(){
- cubeRoot.updateMatrixWorld(true);const inverseRoot=cubeRoot.matrixWorld.clone().invert(),rootQ=new THREE.Quaternion();cubeRoot.getWorldQuaternion(rootQ);const inverseRootQ=rootQ.clone().invert();
- const normalFace={};for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;const result={};for(const f of FACES)result[f]=Array(9).fill(null);
- for(const sticker of stickerMeshes){const worldPos=new THREE.Vector3();sticker.getWorldPosition(worldPos);const pos=worldPos.applyMatrix4(inverseRoot);const worldQ=new THREE.Quaternion();sticker.getWorldQuaternion(worldQ);const localQ=inverseRootQ.clone().multiply(worldQ);const normal=roundedVector(new THREE.Vector3(0,0,1).applyQuaternion(localQ));const f=normalFace[normal.join(',')];if(!f)throw new Error('3D model check: sticker is facing an unknown direction.');const g=GEOM[f],col=Math.round(pos.dot(vec(g.right)))+1,row=Math.round(pos.dot(vec(g.down)))+1;if(row<0||row>2||col<0||col>2)throw new Error('3D model check: sticker moved outside its face grid.');result[f][row*3+col]=sticker.userData.colour;}
+ const size=cubeSize;
+ cubeRoot.updateMatrixWorld(true);
+
+ const inverseRoot=cubeRoot.matrixWorld.clone().invert();
+ const rootQ=new THREE.Quaternion();
+ cubeRoot.getWorldQuaternion(rootQ);
+ const inverseRootQ=rootQ.clone().invert();
+
+ const normalFace={};
+ for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;
+
+ const result={};
+ for(const f of FACES)result[f]=Array(size*size).fill(null);
+
+ for(const sticker of stickerMeshes){
+  const worldPos=new THREE.Vector3();
+  sticker.getWorldPosition(worldPos);
+  const pos=worldPos.applyMatrix4(inverseRoot);
+
+  const worldQ=new THREE.Quaternion();
+  sticker.getWorldQuaternion(worldQ);
+  const localQ=inverseRootQ.clone().multiply(worldQ);
+  const normal=roundedVector(new THREE.Vector3(0,0,1).applyQuaternion(localQ));
+
+  const f=normalFace[normal.join(',')];
+  if(!f)throw new Error('3D model check: sticker is facing an unknown direction.');
+
+  const g=GEOM[f];
+  const col=Math.round(pos.dot(vec(g.right))/1.02+(size-1)/2);
+  const row=Math.round(pos.dot(vec(g.down))/1.02+(size-1)/2);
+
+  if(row<0||row>=size||col<0||col>=size){
+   throw new Error('3D model check: sticker moved outside its face grid.');
+  }
+
+  result[f][row*size+col]=sticker.userData.colour;
+ }
+
  return result;
 }
 function statesMatch(a,b){return FACES.every(f=>a[f].every((c,i)=>c===b[f][i]));}
