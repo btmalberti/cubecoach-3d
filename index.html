@@ -272,7 +272,21 @@ function render(){requestAnimationFrame(render);renderer.render(scene,camera);}r
 const raycaster=new THREE.Raycaster(),pointerNdc=new THREE.Vector2();
 function paintAt(clientX,clientY){
  if(!editing||busy)return;const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;pointerNdc.x=((clientX-rect.left)/rect.width)*2-1;pointerNdc.y=-((clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointerNdc,camera);scene.updateMatrixWorld(true);const hits=raycaster.intersectObjects(cubies,true).filter(hit=>hit.object.userData&&hit.object.userData.face);if(!hits.length){setStatus('No sticker selected. Click directly on a coloured sticker on the visible face.','warn');return;}
- const sticker=hits[0].object;const {face,index}=sticker.userData;facelets[face][index]=selected;sticker.userData.colour=selected;sticker.material=stickerMats[selected];alreadySolved=false;updateColourCounts();updateViewIndicator();invalidateSolution();const faceName=COLORS[facelets[face][4]]?.name||'face with an unknown centre';setStatus(`${COLORS[selected].name} painted onto ${faceName} face · sticker ${index+1}/9.`, 'good');
+  const sticker=hits[0].object;
+  const {face,index}=sticker.userData;
+  facelets[face][index]=selected;
+  sticker.userData.colour=selected;
+  sticker.material=stickerMats[selected];
+  alreadySolved=false;
+  updateColourCounts();
+  updateViewIndicator();
+  invalidateSolution();
+
+  const faceName=cubeSize===3
+   ?(COLORS[facelets[face][4]]?.name||'unknown-colour')
+   :FACE_POSITION[face];
+
+  setStatus(`${COLORS[selected].name} painted onto ${faceName} face · sticker ${index+1}/${stickersPerFace()}.`,'good');
 }
 renderer.domElement.addEventListener('pointerdown',e=>{if(busy||navigationBusy)return;dragging=true;pointerStart={x:e.clientX,y:e.clientY};lastPointer={x:e.clientX,y:e.clientY};renderer.domElement.setPointerCapture(e.pointerId);});
 renderer.domElement.addEventListener('pointermove',e=>{if(!dragging||!lastPointer)return;lastPointer={x:e.clientX,y:e.clientY};});
