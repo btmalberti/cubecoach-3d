@@ -328,10 +328,52 @@ function getSolverString(){
 function parseMove(move){const face=move[0],suffix=move.slice(1),axis={R:'x',L:'x',U:'y',D:'y',F:'z',B:'z'}[face],layer={R:1,L:-1,U:1,D:-1,F:1,B:-1}[face];let sign={R:-1,L:1,U:-1,D:1,F:-1,B:1}[face];if(suffix==="'")sign*=-1;return {face,axis,layer,sign,turns:suffix==='2'?2:1};}
 function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
 function simulateMovesOnStickers(startState,moves){
- const stickers=[];for(const f of FACES){const g=GEOM[f];for(let i=0;i<9;i++){const row=Math.floor(i/3),col=i%3,pos=g.n.map((v,k)=>v+g.right[k]*(col-1)+g.down[k]*(row-1));stickers.push({pos,normal:[...g.n],colour:startState[f][i]});}}
- for(const move of moves){const parsed=parseMove(move),axisIndex={x:0,y:1,z:2}[parsed.axis];for(const sticker of stickers){if(sticker.pos[axisIndex]!==parsed.layer)continue;for(let t=0;t<parsed.turns;t++){sticker.pos=rotateQuarter(sticker.pos,parsed.axis,parsed.sign);sticker.normal=rotateQuarter(sticker.normal,parsed.axis,parsed.sign);}}}
- const normalFace={};for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;const result={};for(const f of FACES)result[f]=Array(9).fill(null);
- for(const sticker of stickers){const f=normalFace[sticker.normal.join(',')];if(!f)throw new Error('Internal sticker-check error.');const g=GEOM[f],col=sticker.pos.reduce((sum,v,k)=>sum+v*g.right[k],0)+1,row=sticker.pos.reduce((sum,v,k)=>sum+v*g.down[k],0)+1;result[f][row*3+col]=sticker.colour;}
+ const size=cubeSize,stickers=[];
+
+ for(const f of FACES){
+  const g=GEOM[f];
+  for(let i=0;i<size*size;i++){
+   const row=Math.floor(i/size),col=i%size;
+   const offset=size===3?1:0.5;
+   const colPos=size===3?col-1:col*2-1;
+   const rowPos=size===3?row-1:row*2-1;
+   const pos=g.n.map((v,k)=>v+g.right[k]*colPos+g.down[k]*rowPos);
+   stickers.push({pos,normal:[...g.n],colour:startState[f][i]});
+  }
+ }
+
+ for(const move of moves){
+  const parsed=parseMove(move);
+  const axisIndex={x:0,y:1,z:2}[parsed.axis];
+
+  for(const sticker of stickers){
+   if(sticker.pos[axisIndex]!==parsed.layer)continue;
+   for(let t=0;t<parsed.turns;t++){
+    sticker.pos=rotateQuarter(sticker.pos,parsed.axis,parsed.sign);
+    sticker.normal=rotateQuarter(sticker.normal,parsed.axis,parsed.sign);
+   }
+  }
+ }
+
+ const normalFace={};
+ for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;
+
+ const result={};
+ for(const f of FACES)result[f]=Array(size*size).fill(null);
+
+ for(const sticker of stickers){
+  const f=normalFace[sticker.normal.join(',')];
+  if(!f)throw new Error('Internal sticker-check error.');
+
+  const g=GEOM[f];
+  const colDot=sticker.pos.reduce((sum,v,k)=>sum+v*g.right[k],0);
+  const rowDot=sticker.pos.reduce((sum,v,k)=>sum+v*g.down[k],0);
+  const col=size===3?Math.round(colDot)+1:Math.round((colDot+1)/2);
+  const row=size===3?Math.round(rowDot)+1:Math.round((rowDot+1)/2);
+
+  result[f][row*size+col]=sticker.colour;
+ }
+
  return result;
 }
 function stateToSolverString(state,colourToFace){return FACES.map(f=>state[f].map(c=>colourToFace[c]).join('')).join('');}
