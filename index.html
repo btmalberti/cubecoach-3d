@@ -155,16 +155,53 @@ const bodyMat=new THREE.MeshStandardMaterial({color:0x10141c,roughness:.48,metal
 const stickerMats={};for(const [code,data] of Object.entries(COLORS))stickerMats[code]=new THREE.MeshStandardMaterial({color:data.hex,roughness:.34,metalness:.01});
 const bodyGeo=new THREE.BoxGeometry(.98,.98,.98),stickerGeo=new THREE.PlaneGeometry(.84,.84);
 function buildCubeFromFacelets(state){
- animationVersion++;busy=false;while(cubeRoot.children.length)cubeRoot.remove(cubeRoot.children[0]);cubies=[];stickerMeshes=[];stickerMap={};
+ animationVersion++;
+ busy=false;
+ while(cubeRoot.children.length)cubeRoot.remove(cubeRoot.children[0]);
+ cubies=[];
+ stickerMeshes=[];
+ stickerMap={};
+
  const lookup={};
- for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
-  const g=new THREE.Group();g.position.set(x*1.02,y*1.02,z*1.02);g.add(new THREE.Mesh(bodyGeo,bodyMat));g.userData.grid={x,y,z};cubeRoot.add(g);cubies.push(g);lookup[`${x},${y},${z}`]=g;
+ const coords=cubeSize===2?[-0.5,0.5]:[-1,0,1];
+ const keyOf=p=>p.map(v=>Number(v.toFixed(2))).join(',');
+
+ for(const x of coords)for(const y of coords)for(const z of coords){
+  const g=new THREE.Group();
+  g.position.set(x*1.02,y*1.02,z*1.02);
+  g.add(new THREE.Mesh(bodyGeo,bodyMat));
+  g.userData.grid={x,y,z};
+  cubeRoot.add(g);
+  cubies.push(g);
+  lookup[keyOf([x,y,z])]=g;
  }
- for(const f of FACES){const basis=GEOM[f];for(let i=0;i<9;i++){
-  const row=Math.floor(i/3),col=i%3;const p=vec(basis.n).addScaledVector(vec(basis.right),col-1).addScaledVector(vec(basis.down),row-1);const key=`${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`;const cubie=lookup[key];
-  const sticker=new THREE.Mesh(stickerGeo,stickerMats[state[f][i]]);sticker.position.copy(vec(basis.n)).multiplyScalar(.502);sticker.rotation.copy(stickerRotation(f));sticker.userData={face:f,index:i,colour:state[f][i]};cubie.add(sticker);stickerMeshes.push(sticker);stickerMap[`${f}${i}`]=sticker;
- }}
- cubeRoot.rotation.set(Math.PI/2,0,0);cubeRoot.rotation.order='XYZ';
+
+ const size=cubeSize;
+ for(const f of FACES){
+  const basis=GEOM[f];
+  for(let i=0;i<stickersPerFace();i++){
+   const row=Math.floor(i/size);
+   const col=i%size;
+
+   const p=cubeSize===3
+    ?vec(basis.n).addScaledVector(vec(basis.right),col-1).addScaledVector(vec(basis.down),row-1)
+    :vec(basis.n).multiplyScalar(0.5).addScaledVector(vec(basis.right),col-0.5).addScaledVector(vec(basis.down),row-0.5);
+
+   const cubie=lookup[keyOf([p.x,p.y,p.z])];
+   if(!cubie)throw new Error('Could not build a cube sticker.');
+
+   const sticker=new THREE.Mesh(stickerGeo,stickerMats[state[f][i]]);
+   sticker.position.copy(vec(basis.n)).multiplyScalar(.502);
+   sticker.rotation.copy(stickerRotation(f));
+   sticker.userData={face:f,index:i,colour:state[f][i]};
+   cubie.add(sticker);
+   stickerMeshes.push(sticker);
+   stickerMap[`${f}${i}`]=sticker;
+  }
+ }
+
+ cubeRoot.rotation.set(Math.PI/2,0,0);
+ cubeRoot.rotation.order='XYZ';
  updateViewIndicator();
 }
 const FACE_POSITION={U:'top',R:'right',F:'front',D:'bottom',L:'left',B:'back'};
