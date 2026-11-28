@@ -722,7 +722,7 @@ function parseMove(move){
    slice:Boolean(depthPrefix&&!wideSuffix),
    wide:Boolean(wideSuffix)
   };
-function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
+ }function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
 function simulateMovesOnStickers(startState,moves){
  const size=cubeSize;
  const stickers=[];
@@ -911,8 +911,11 @@ function animateMove(move,done){
  const pivot=new THREE.Group();
  cubeRoot.add(pivot);
 
- const moving=cubies.filter(g=>{
-  if(parsed.rotation)return true;
+   const moving=cubies.filter(g=>{
+   if(parsed.rotation)return true;
+
+   const coordinate=g.position[axis];
+
    if(cubeSize>=3){
     const offset=(cubeSize-1)/2;
     const targetDepth=parsed.depth;
@@ -931,15 +934,8 @@ function animateMove(move,done){
     return Math.abs(coordinate-target)<0.001;
    }
 
-   return Math.sign(g.position[axis])===layer;
-           Math.abs(coordinate-inner)<0.001;
-   }
-
-   return Math.abs(coordinate-outer)<0.001;
-  }
-
-  return Math.round(coordinate)===layer;
- });
+   return Math.sign(coordinate)===layer;
+  });
 
  moving.forEach(g=>pivot.attach(g));
 
