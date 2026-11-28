@@ -335,7 +335,12 @@ function buildCubeFromFacelets(state){
  stickerMap={};
 
  const lookup={};
- const coords=cubeSize===2?[-0.5,0.5]:[-1,0,1];
+ const coords=cubeSize===2
+  ?[-0.5,0.5]
+  :cubeSize===3
+   ?[-1,0,1]
+   :[-1.5,-0.5,0.5,1.5];
+
  const keyOf=p=>p.map(v=>Number(v.toFixed(2))).join(',');
 
  for(const x of coords)for(const y of coords)for(const z of coords){
@@ -349,15 +354,17 @@ function buildCubeFromFacelets(state){
  }
 
  const size=cubeSize;
+ const layerOffset=(size-1)/2;
+
  for(const f of FACES){
   const basis=GEOM[f];
   for(let i=0;i<stickersPerFace();i++){
    const row=Math.floor(i/size);
    const col=i%size;
 
-   const p=cubeSize===3
-    ?vec(basis.n).addScaledVector(vec(basis.right),col-1).addScaledVector(vec(basis.down),row-1)
-    :vec(basis.n).multiplyScalar(0.5).addScaledVector(vec(basis.right),col-0.5).addScaledVector(vec(basis.down),row-0.5);
+   const p=vec(basis.n).multiplyScalar(layerOffset)
+    .addScaledVector(vec(basis.right),col-layerOffset)
+    .addScaledVector(vec(basis.down),row-layerOffset);
 
    const cubie=lookup[keyOf([p.x,p.y,p.z])];
    if(!cubie)throw new Error('Could not build a cube sticker.');
