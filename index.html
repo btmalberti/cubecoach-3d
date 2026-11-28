@@ -985,7 +985,6 @@ function updateProgress(){
  $('instruction').textContent=describeMove(m);
  $('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';
 }
-}
 function stopPlayback(){playing=false;clearTimeout(playTimer);$('play').textContent='▶ Play slowly';if(solution.length)setControlState(true);}
 function finishAndVerify(){
  stopPlayback();
