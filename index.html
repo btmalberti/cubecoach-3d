@@ -212,7 +212,15 @@ function getFrontFace(){
  return best;
 }
 function updateViewIndicator(){
- const f=getFrontFace(),colour=facelets[f]?.[4]||DEFAULT[f],name=COLORS[colour]?.name||'Unknown';
+ const f=getFrontFace();
+
+ if(cubeSize===2){
+  $('viewIndicator').textContent=`Currently showing: ${FACE_POSITION[f].toUpperCase()} face (${f})`;
+  return;
+ }
+
+ const colour=facelets[f]?.[4]||DEFAULT[f];
+ const name=COLORS[colour]?.name||'Unknown';
  $('viewIndicator').textContent=`Currently showing: ${name.toUpperCase()} face (${f}) · ${FACE_POSITION[f]}`;
 }
 function animateCubeOrientation(axis,angle){
