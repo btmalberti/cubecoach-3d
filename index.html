@@ -725,7 +725,15 @@ function parseMove(move){
  }
 
  function rotateQuarter(v,axis,sign){
-function simulateMovesOnStickers(startState,moves){
+  const [x,y,z]=v;
+
+  if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];
+  if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];
+
+  return sign>0?[-y,x,z]:[y,-x,z];
+ }
+
+ function simulateMovesOnStickers(startState,moves){
  const size=cubeSize;
  const stickers=[];
  const offset=(size-1)/2;
