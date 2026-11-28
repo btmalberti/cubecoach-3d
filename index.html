@@ -699,35 +699,71 @@ function getRenderedFacelets(){
 function statesMatch(a,b){return FACES.every(f=>a[f].every((c,i)=>c===b[f][i]));}
 function verifyRenderedStep(){const expected=simulateMovesOnStickers(facelets,solution.slice(0,stepIndex));const actual=getRenderedFacelets();return statesMatch(expected,actual);}
 function snapObjectToGrid(obj){
- const snapPosition=value=>cubeSize===2
-  ?Math.sign(value)*0.51
-  :Math.round(value/1.02)*1.02;
+ const snapPosition=value=>{
+  if(cubeSize===2)return Math.sign(value)*0.51;
+
+  if(cubeSize===4){
+   return (Math.round(value/1.02-0.5)+0.5)*1.02;
+  }
+
+  return Math.round(value/1.02)*1.02;
+ };
+
  obj.position.set(
   snapPosition(obj.position.x),
   snapPosition(obj.position.y),
   snapPosition(obj.position.z)
  );
+
  const m=new THREE.Matrix4().makeRotationFromQuaternion(obj.quaternion);
  const x=new THREE.Vector3().setFromMatrixColumn(m,0);
  const y=new THREE.Vector3().setFromMatrixColumn(m,1);
  const z=new THREE.Vector3().setFromMatrixColumn(m,2);
+
  x.set(Math.round(x.x),Math.round(x.y),Math.round(x.z));
  y.set(Math.round(y.x),Math.round(y.y),Math.round(y.z));
  z.set(Math.round(z.x),Math.round(z.y),Math.round(z.z));
- obj.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x,y,z));
+
+ obj.quaternion.setFromRotationMatrix(
+  new THREE.Matrix4().makeBasis(x,y,z)
+ );
 }
 
 function animateMove(move,done){
  const version=animationVersion;
- const {axis,layer,sign,turns}=parseMove(move);
+ const parsed=parseMove(move);
+ const {axis,layer,sign,turns}=parsed;
+
  const pivot=new THREE.Group();
  cubeRoot.add(pivot);
 
- const moving=cubies.filter(g=>
-  cubeSize===2
-   ?Math.sign(g.position[axis])===layer
-   :Math.round(g.position[axis]/1.02)===layer
- );
+ const moving=cubies.filter(g=>{
+  if(parsed.rotation)return true;
+
+  if(cubeSize===2){
+   return Math.sign(g.position[axis])===layer;
+  }
+
+  const coordinate=g.position[axis]/1.02;
+
+  if(cubeSize===4){
+   const outer=layer*1.5;
+   const inner=layer*0.5;
+
+   if(parsed.slice){
+    return Math.abs(coordinate-inner)<0.001;
+   }
+
+   if(parsed.wide){
+    return Math.abs(coordinate-outer)<0.001||
+           Math.abs(coordinate-inner)<0.001;
+   }
+
+   return Math.abs(coordinate-outer)<0.001;
+  }
+
+  return Math.round(coordinate)===layer;
+ });
 
  moving.forEach(g=>pivot.attach(g));
 
@@ -737,17 +773,26 @@ function animateMove(move,done){
 
  function frame(now){
   if(version!==animationVersion)return;
+
   const t=Math.min(1,(now-start)/duration);
   pivot.rotation[axis]=target*(1-Math.pow(1-t,3));
-  if(t<1){requestAnimationFrame(frame);return;}
+
+  if(t<1){
+   requestAnimationFrame(frame);
+   return;
+  }
+
   pivot.updateMatrixWorld(true);
+
   for(const g of moving){
    cubeRoot.attach(g);
    snapObjectToGrid(g);
   }
+
   cubeRoot.remove(pivot);
   done?.();
  }
+
  requestAnimationFrame(frame);
 }
 function inverseMove(m){if(m.endsWith('2'))return m;if(m.endsWith("'"))return m[0];return m[0]+"'";}
