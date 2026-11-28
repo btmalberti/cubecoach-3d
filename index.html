@@ -151,17 +151,60 @@ main{max-width:1240px;margin:auto;padding:10px 22px 34px;display:grid;grid-templ
 <meta name="google-site-verification" content="jJuRjhU7VQjyKaEpgXZ7Zh_CXY_zmsf6S6Mk-Co0G0w" />
 </head>
 <body>
-<header><div><h1>🧩 CubeCoach <span>3D</span></h1><div class="subtitle">Match the stickers on your scrambled cube — then watch a fast, checked solution play itself.</div></div><div class="tag">3 × 3 × 3 · 3D INPUT + SOLVER</div></header>
-<main>
+  <div id="homeScreen" class="home-screen">
+ <div class="home-brand">
+  <div class="home-mark">🧩</div>
+  <div>
+   <h1>CubeCoach <span>3D</span></h1>
+   <p>Free online Rubik’s Cube solver</p>
+  </div>
+ </div>
+
+ <div class="home-intro">
+  <div class="kicker">CUBECOACH 3D</div>
+  <h2>Which cube would you like to solve?</h2>
+  <p>Choose your cube to open its own interactive 3D solver.</p>
+ </div>
+
+ <div class="mode-grid">
+  <button class="mode-card" type="button" data-cube-size="2">
+   <span class="mode-chip">2 × 2 × 2</span>
+   <span class="mode-number">2×2</span>
+   <span class="mode-title">2×2 Cube</span>
+   <span class="mode-description">Enter your scrambled 2×2 and follow its animated solution.</span>
+   <span class="mode-action">Open 2×2 solver →</span>
+  </button>
+
+  <button class="mode-card" type="button" data-cube-size="3">
+   <span class="mode-chip">3 × 3 × 3</span>
+   <span class="mode-number">3×3</span>
+   <span class="mode-title">3×3 Cube</span>
+   <span class="mode-description">Enter your scrambled 3×3 and follow its animated solution.</span>
+   <span class="mode-action">Open 3×3 solver →</span>
+  </button>
+ </div>
+
+ <div class="home-footer">
+  Choose a cube to get started. You can return here whenever you like.
+ </div>
+</div>
+
+<div id="solverScreen" class="hide">
+<header>
+ <div>
+  <h1>🧩 CubeCoach <span>3D</span></h1>
+  <div class="subtitle">Match the stickers on your scrambled cube — then watch a fast, checked solution play itself.</div>
+ </div>
+ <div class="solver-header-actions">
+  <button class="btn secondary" id="backHome" type="button">← Home</button>
+  <div class="tag">3 × 3 × 3 · 3D INPUT + SOLVER</div>
+ </div>
+</header>
 <section class="panel">
-  <div class="readout" style="margin:0 0 14px">
-  <label for="cubeSize">Cube size
-    <select id="cubeSize">
-      <option value="3" selected>3×3</option>
-      <option value="2">2×2</option>
-    </select>
-  </label>
-      </div>
+   <select id="cubeSize" class="hide" tabindex="-1" aria-hidden="true">
+    <option value="3" selected>3×3</option>
+    <option value="2">2×2</option>
+  </select>
  <div class="kicker">Step 1 · Enter your cube on the model</div>
  <h2>Paint the 3D cube</h2>
  <p class="intro">The cube starts with its six normal Rubik’s Cube colours. Choose a colour, then click only the stickers whose colours are different on your scrambled cube. Each click changes that sticker on the 3D model immediately. Use ← → ↑ ↓ to rotate the whole cube and reveal the other faces. For the standard colour layout, hold your real cube with white on top, green in front and red on the right.</p>
@@ -196,6 +239,7 @@ main{max-width:1240px;margin:auto;padding:10px 22px 34px;display:grid;grid-templ
  <div class="footer">Keyboard: ← / → / ↑ / ↓ rotate the whole cube by 90° to reveal an adjacent face. Starting on white, press ↓ to show green. These controls do not turn a solving layer or change the cube's scrambled state. R/L = right/left · U/D = top/bottom · F/B = front/back.</div>
 </section>
 </main>
+</div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import size2x2 from 'https://cdn.jsdelivr.net/gh/ryakel/solvent@5e110cdc5b7dfce8f56b9e9e75e55864e4748e6a/src/sizes/size2x2.js';
