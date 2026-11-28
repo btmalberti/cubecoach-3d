@@ -963,6 +963,24 @@ function updateProgress(){
   ?COLORS[facelets[face][4]].hex
   :'var(--cyan)';
 
+  const m=solution[stepIndex];
+ const parsed=parseMove(m);
+ const face=parsed.face;
+
+ const moveLabel=parsed.rotation
+  ?'WHOLE CUBE'
+  :parsed.slice
+   ?'INNER LAYER'
+   :parsed.wide
+    ?'WIDE TURN'
+    :cubeSize===3
+     ?COLORS[facelets[face][4]].name.toUpperCase()
+     :FACE_POSITION[face].toUpperCase();
+
+ const moveColor=cubeSize===3&&!parsed.rotation
+  ?COLORS[facelets[face][4]].hex
+  :'var(--cyan)';
+
  $('moveNumber').textContent=`Move ${stepIndex+1} of ${total}`;
  $('move').textContent=`${m} · ${moveLabel}`;
  $('move').style.color=moveColor;
