@@ -573,6 +573,82 @@ function doForward(){if(busy||stepIndex>=solution.length)return;busy=true;setCon
 function doBackward(){if(busy||stepIndex<=0)return;busy=true;setControlState(true);const move=inverseMove(solution[stepIndex-1]);animateMove(move,()=>{stepIndex--;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The previous-move animation failed its 3D check. Press Restart to return to the starting cube.','error');setControlState(false);return;}setControlState(true);});}
 $('solve').addEventListener('click',()=>{
  stopPlayback();
+   if(cubeSize===2){
+  const changedCount=FACES.reduce((n,f)=>n+facelets[f].filter((c,i)=>c!==DEFAULT[f]).length,0);
+
+  if(changedCount===0){
+   setStatus('No scrambled colours have been entered yet. Change the stickers to match your scrambled 2×2 cube, then try again.','error');
+   return;
+  }
+
+  $('solve').disabled=true;
+  setControlState(false);
+  setStatus('Checking the 2×2 cube and finding a solution…');
+
+  setTimeout(()=>{
+   try{
+    const faces=get2x2Faces();
+    const result=size2x2.solve(faces);
+
+    if(!result||!Array.isArray(result.moves)){
+     throw new Error('The 2×2 solver did not return a valid move list.');
+    }
+
+    const moves=result.moves.map(move=>move.name);
+    if(moves.some(move=>typeof move!=='string')){
+     throw new Error('The 2×2 solver returned an invalid move.');
+    }
+
+    const simulated=simulateMovesOnStickers(facelets,moves);
+    const solved=FACES.every(f=>simulated[f].every(c=>c===simulated[f][0]));
+
+    if(!solved){
+     throw new Error('The independent 2×2 move check did not end with six uniform faces.');
+    }
+
+    buildCubeFromFacelets(facelets);
+
+    if(!statesMatch(facelets,getRenderedFacelets())){
+     throw new Error('The 3D cube display does not match the entered 2×2 stickers.');
+    }
+
+    solution=moves;
+    stepIndex=0;
+    editing=false;
+    alreadySolved=moves.length===0;
+
+    $('edit').classList.remove('hide');
+    $('canvasHint').textContent='The same 3D cube is performing the 2×2 solution. Each move is shown with its face and turn angle.';
+
+    setStatus(solution.length
+     ?`2×2 solution found and independently verified: ${solution.length} moves. Starting the 3D animation…`
+     :'Your 2×2 cube is already solved. No moves are needed.','good');
+
+    $('solution').textContent=solution.length
+     ?`VERIFIED 2×2 SOLUTION · ${solution.length} moves\n`+solution.join('   ')
+     :'Already solved — no moves needed.';
+
+    updateProgress();
+    setControlState(solution.length>0);
+    $('restart').disabled=!solution.length;
+
+    if(solution.length){
+     playing=true;
+     $('play').textContent='▶ Playing';
+     setControlState(true);
+     setTimeout(()=>{if(playing)doForward();},300);
+    }else{
+     setControlState(false);
+    }
+   }catch(e){
+    setStatus(e.message||'The 2×2 cube could not be solved. Check the stickers you painted.','error');
+   }finally{
+    $('solve').disabled=false;
+   }
+  },50);
+
+  return;
+ }
  const changedCount=FACES.reduce((n,f)=>n+facelets[f].filter((c,i)=>c!==DEFAULT[f]).length,0);
  if(changedCount===0){setStatus('No scrambled colours have been entered yet. This 3D cube is still in its normal solved colour layout. Change the stickers to match your scrambled cube, then try again.','error');return;}
  let faceString,colourToFace={};try{faceString=getSolverString();for(const f of FACES)colourToFace[facelets[f][4]]=f;}catch(e){setStatus(e.message,'error');return;}
