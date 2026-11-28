@@ -892,7 +892,11 @@ function animateMove(move,done){
 
  requestAnimationFrame(frame);
 }
-function inverseMove(m){if(m.endsWith('2'))return m;if(m.endsWith("'"))return m[0];return m[0]+"'";}
+function inverseMove(m){
+ if(m.endsWith('2'))return m;
+ if(m.endsWith("'"))return m.slice(0,-1);
+ return m+"'";
+}
 const FACE_NAMES={R:'right',L:'left',U:'top',D:'bottom',F:'front',B:'back'};
 function describeMove(m){
  const face=m[0],suffix=m.slice(1);
