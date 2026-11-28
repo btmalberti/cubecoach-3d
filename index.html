@@ -549,6 +549,81 @@ function getSolverString(){
   const invalid=stickers.filter(c=>!COLORS[c]||c===BLANK).length;
   if(invalid){
    throw new Error(`Face ${f} has ${invalid} unpainted or invalid stickers.`);
+    function get4x4Faces(){
+ const colourToFace={
+  W:'U',
+  R:'R',
+  G:'F',
+  Y:'D',
+  O:'L',
+  B:'B'
+ };
+
+ const faces={};
+ const counts={W:0,R:0,G:0,Y:0,O:0,B:0};
+
+ for(const f of FACES){
+  const stickers=facelets[f];
+
+  if(!Array.isArray(stickers)||stickers.length!==16){
+   throw new Error(`Face ${f} must have exactly 16 stickers.`);
+  }
+
+  faces[f]=stickers.map((colour,index)=>{
+   if(!colourToFace[colour]){
+    throw new Error(`Face ${f}, sticker ${index+1}, has an invalid or unpainted colour.`);
+   }
+
+   counts[colour]++;
+   return colourToFace[colour];
+  });
+ }
+
+ for(const colour of Object.keys(counts)){
+  if(counts[colour]!==16){
+   throw new Error(`${COLORS[colour].name} appears ${counts[colour]} times. Each colour must appear exactly 16 times.`);
+  }
+ }
+
+ return faces;
+}function get4x4Faces(){
+ const colourToFace={
+  W:'U',
+  R:'R',
+  G:'F',
+  Y:'D',
+  O:'L',
+  B:'B'
+ };
+
+ const faces={};
+ const counts={W:0,R:0,G:0,Y:0,O:0,B:0};
+
+ for(const f of FACES){
+  const stickers=facelets[f];
+
+  if(!Array.isArray(stickers)||stickers.length!==16){
+   throw new Error(`Face ${f} must have exactly 16 stickers.`);
+  }
+
+  faces[f]=stickers.map((colour,index)=>{
+   if(!colourToFace[colour]){
+    throw new Error(`Face ${f}, sticker ${index+1}, has an invalid or unpainted colour.`);
+   }
+
+   counts[colour]++;
+   return colourToFace[colour];
+  });
+ }
+
+ for(const colour of Object.keys(counts)){
+  if(counts[colour]!==16){
+   throw new Error(`${COLORS[colour].name} appears ${counts[colour]} times. Each colour must appear exactly 16 times.`);
+  }
+ }
+
+ return faces;
+}
   }
 
   faces[f]=[...stickers];
