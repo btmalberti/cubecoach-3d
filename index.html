@@ -692,36 +692,36 @@ function parseMove(move){
   };
  }
 
- const match=token.match(/^(2)?([URFDLB])(w)?([2']?)$/);
+   const match=token.match(/^([2-5])?([URFDLB])(w)?([2']?)$/);
 
- if(!match){
-  throw new Error(`Unsupported cube move: ${token}`);
- }
+  if(!match){
+   throw new Error(`Unsupported cube move: ${token}`);
+  }
 
- const [,innerPrefix,face,wideSuffix,suffix]=match;
+  const [,depthPrefix,face,wideSuffix,suffix]=match;
 
- if(innerPrefix&&wideSuffix){
-  throw new Error(`Invalid cube move: ${token}`);
- }
+  const axis={R:'x',L:'x',U:'y',D:'y',F:'z',B:'z'}[face];
+  const layer={R:1,L:-1,U:1,D:-1,F:1,B:-1}[face];
 
- const axis={R:'x',L:'x',U:'y',D:'y',F:'z',B:'z'}[face];
- const layer={R:1,L:-1,U:1,D:-1,F:1,B:-1}[face];
+  let sign={R:-1,L:1,U:-1,D:1,F:-1,B:1}[face];
 
- let sign={R:-1,L:1,U:-1,D:1,F:-1,B:1}[face];
+  if(suffix==="'")sign*=-1;
 
- if(suffix==="'")sign*=-1;
+  const depth=depthPrefix
+   ?Number(depthPrefix)
+   :(wideSuffix?2:1);
 
- return {
-  face,
-  axis,
-  layer,
-  sign,
-  turns:suffix==='2'?2:1,
-  rotation:false,
-  slice:Boolean(innerPrefix),
-  wide:Boolean(wideSuffix)
- };
-}
+  return {
+   face,
+   axis,
+   layer,
+   sign,
+   depth,
+   turns:suffix==='2'?2:1,
+   rotation:false,
+   slice:Boolean(depthPrefix&&!wideSuffix),
+   wide:Boolean(wideSuffix)
+  };
 function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
 function simulateMovesOnStickers(startState,moves){
  const size=cubeSize;
@@ -758,21 +758,28 @@ function simulateMovesOnStickers(startState,moves){
 
    if(parsed.rotation){
     selected=true;
-   }else if(size===4){
-    const outer=parsed.layer*1.5;
-    const inner=parsed.layer*0.5;
+     }else if(size>=3){
+     const offset=(size-1)/2;
+     const targetDepth=parsed.depth;
 
-    if(parsed.slice){
-     selected=Math.abs(coordinate-inner)<0.001;
-    }else if(parsed.wide){
-     selected=
-      Math.abs(coordinate-outer)<0.001||
-      Math.abs(coordinate-inner)<0.001;
+     if(parsed.wide){
+      selected=false;
+
+      for(let d=1;d<=targetDepth;d++){
+       const target=parsed.layer*(offset-(d-1));
+
+       if(Math.abs(coordinate-target)<0.001){
+        selected=true;
+        break;
+       }
+      }
+     }else{
+      const target=parsed.layer*(offset-(targetDepth-1));
+      selected=Math.abs(coordinate-target)<0.001;
+     }
     }else{
-     selected=Math.abs(coordinate-outer)<0.001;
+     selected=Math.abs(coordinate-parsed.layer)<0.001;
     }
-   }else{
-    selected=Math.abs(coordinate-parsed.layer)<0.001;
    }
 
    if(!selected)continue;
@@ -906,23 +913,25 @@ function animateMove(move,done){
 
  const moving=cubies.filter(g=>{
   if(parsed.rotation)return true;
+   if(cubeSize>=3){
+    const offset=(cubeSize-1)/2;
+    const targetDepth=parsed.depth;
 
-  if(cubeSize===2){
-   return Math.sign(g.position[axis])===layer;
-  }
+    if(parsed.wide){
+     for(let d=1;d<=targetDepth;d++){
+      const target=layer*(offset-(d-1));
 
-  const coordinate=g.position[axis]/1.02;
+      if(Math.abs(coordinate-target)<0.001)return true;
+     }
 
-  if(cubeSize===4){
-   const outer=layer*1.5;
-   const inner=layer*0.5;
+     return false;
+    }
 
-   if(parsed.slice){
-    return Math.abs(coordinate-inner)<0.001;
+    const target=layer*(offset-(targetDepth-1));
+    return Math.abs(coordinate-target)<0.001;
    }
 
-   if(parsed.wide){
-    return Math.abs(coordinate-outer)<0.001||
+   return Math.sign(g.position[axis])===layer;
            Math.abs(coordinate-inner)<0.001;
    }
 
