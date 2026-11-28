@@ -1244,11 +1244,13 @@ $('cubeSize').addEventListener('change',()=>{
  setControlState(false);
  updateViewIndicator();
 
- $('canvasHint').textContent=is2x2
+  $('demo').classList.toggle('hide',is2x2||is4x4);
   ?'Click stickers that differ from your real 2×2 cube · changes appear immediately'
-  :'Click any sticker that differs from your real cube · changes appear immediately';
-
- setStatus(`Switched to the ${cubeSize}×${cubeSize} cube. The model has been reset to solved colours.`);
+  $('canvasHint').textContent=is2x2
+   ?'Click stickers that differ from your real 2×2 cube · changes appear immediately'
+   :is4x4
+    ?'Click stickers that differ from your real 4×4 cube · changes appear immediately'
+    :'Click any sticker that differs from your real cube · changes appear immediately';
 });
   // Homepage navigation
 document.querySelectorAll('[data-cube-size]').forEach(button=>{
