@@ -260,6 +260,64 @@ const $=id=>document.getElementById(id);
   let cubeSize = 3;
 let selected='W',facelets={},solution=[],stepIndex=0,playing=false,busy=false,playTimer=null,solverReady=false,animationVersion=0,editing=true;
 let cubies=[],stickerMeshes=[],stickerMap={},dragging=false,pointerStart=null,lastPointer=null,alreadySolved=false;
+
+let solver4x4Worker=null;
+let solver4x4RequestId=0;
+let solver4x4Pending=null;
+
+function request4x4Solution(faces){
+ return new Promise((resolve,reject)=>{
+  if(!solver4x4Worker){
+   solver4x4Worker=new Worker(
+    new URL('./solver4x4-worker.js',import.meta.url)
+   );
+
+   solver4x4Worker.onmessage=event=>{
+    const data=event.data||{};
+
+    if(!solver4x4Pending||data.requestId!==solver4x4Pending.requestId){
+     return;
+    }
+
+    const pending=solver4x4Pending;
+    solver4x4Pending=null;
+
+    if(data.type==='solved'){
+     pending.resolve(data.moves);
+    }else{
+     pending.reject(new Error(data.message||'The 4×4 solver could not solve this cube.'));
+    }
+   };
+
+   solver4x4Worker.onerror=()=>{
+    if(solver4x4Pending){
+     solver4x4Pending.reject(
+      new Error('The 4×4 solving engine failed to load. Check your internet connection and reload the page.')
+     );
+     solver4x4Pending=null;
+    }
+
+    solver4x4Worker?.terminate();
+    solver4x4Worker=null;
+   };
+  }
+
+  if(solver4x4Pending){
+   reject(new Error('A 4×4 solve is already running.'));
+   return;
+  }
+
+  const requestId=++solver4x4RequestId;
+
+  solver4x4Pending={requestId,resolve,reject};
+
+  solver4x4Worker.postMessage({
+   type:'solve',
+   requestId,
+   faces
+  });
+ });
+}
 const palette=$('palette'),status=$('status');
   function setStatus(message,type='info'){
  status.textContent=message;
