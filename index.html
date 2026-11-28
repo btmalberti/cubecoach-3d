@@ -1103,9 +1103,47 @@ $('solve').addEventListener('click',()=>{
 
   setTimeout(async()=>{
    try{
-    const faces=get4x4Faces();
-    const moves=await request4x4Solution(faces);
+        const faces=get4x4Faces();
+     let moves=null;
 
+     // Check whether one ordinary face turn solves the cube.
+          // Remove unnecessary moves after the cube first becomes solved.
+     for(let end=1;end<=moves.length;end++){
+      const partial=simulateMovesOnStickers(
+       facelets,
+       moves.slice(0,end)
+      );
+
+      const solvedAtThisPoint=FACES.every(f=>
+       partial[f].every(c=>c===partial[f][0])
+      );
+
+      if(solvedAtThisPoint){
+       moves=moves.slice(0,end);
+       break;
+      }
+     }const oneTurnCandidates=FACES.flatMap(face=>[
+      face,
+      face+"'",
+      face+"2"
+     ]);
+
+     for(const candidate of oneTurnCandidates){
+      const test=simulateMovesOnStickers(facelets,[candidate]);
+      const solvedByOneTurn=FACES.every(f=>
+       test[f].every(c=>c===test[f][0])
+      );
+
+      if(solvedByOneTurn){
+       moves=[candidate];
+       break;
+      }
+     }
+
+     // Use the full solver only when one turn is not enough.
+     if(!moves){
+      moves=await request4x4Solution(faces);
+     }
     if(!Array.isArray(moves)||moves.some(move=>typeof move!=='string')){
      throw new Error('The 4×4 solver returned an invalid move list.');
     }
