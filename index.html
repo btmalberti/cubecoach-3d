@@ -683,7 +683,59 @@ $('restart').addEventListener('click',()=>{stopPlayback();stepIndex=0;buildCubeF
 $('edit').addEventListener('click',()=>{stopPlayback();solution=[];stepIndex=0;alreadySolved=false;editing=true;$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';buildCubeFromFacelets(facelets);updateProgress();setControlState(false);$('canvasHint').textContent='Click stickers that differ from your real cube · swipe or press ← → ↑ ↓ to reveal the other faces';setStatus('Colour editing is enabled. Change the stickers directly on the 3D cube.');});
 $('reset').addEventListener('click',()=>{stopPlayback();solution=[];stepIndex=0;editing=true;resetFacelets();buildCubeFromFacelets(facelets);$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';updateColourCounts();updateProgress();setControlState(false);$('canvasHint').textContent='Click a sticker that differs from your real cube · every click updates the 3D model';setStatus('Cube reset to its normal solved colours. Change only the stickers that differ from your scrambled cube.');updateViewIndicator();});
 $('demo').addEventListener('click',()=>{alreadySolved=false;if(!window.Cube){setStatus('The solver engine is still loading. Check your internet connection.','error');return;}try{const demo=new Cube();demo.move("R U R' F2 D L U2 B' R2 F' D2");const string=demo.asString(),toColour={U:DEFAULT.U,R:DEFAULT.R,F:DEFAULT.F,D:DEFAULT.D,L:DEFAULT.L,B:DEFAULT.B};let i=0;for(const f of FACES){facelets[f]=string.slice(i,i+9).split('').map(letter=>toColour[letter]);i+=9;}stopPlayback();solution=[];stepIndex=0;editing=true;buildCubeFromFacelets(facelets);$('edit').classList.add('hide');$('solution').textContent='Move instructions will appear here after the cube is checked.';updateColourCounts();updateProgress();setControlState(false);$('canvasHint').textContent='Demo scramble loaded. Press Solve this cube. Use ← → ↑ ↓ to move between faces with animation.';setStatus('Demo scramble painted onto the 3D model. Press “Solve this cube” to solve it.','good');}catch(e){setStatus('Could not load the demo scramble. Reload the page and try again.','error');}});
+$('cubeSize').addEventListener('change',()=>{
+ if($('solve').disabled){
+  $('cubeSize').value=String(cubeSize);
+  return;
+ }
 
+ stopPlayback();
+ cubeSize=Number($('cubeSize').value);
+
+ solution=[];
+ stepIndex=0;
+ editing=true;
+ alreadySolved=false;
+
+ resetFacelets();
+ buildCubeFromFacelets(facelets);
+
+ $('edit').classList.add('hide');
+ $('solution').textContent='Move instructions will appear here after the cube is checked.';
+
+ const is2x2=cubeSize===2;
+
+ document.querySelector('.tag').textContent=is2x2
+  ?'2 × 2 × 2 · 3D INPUT + SOLVER'
+  :'3 × 3 × 3 · 3D INPUT + SOLVER';
+
+ document.querySelector('.intro').textContent=is2x2
+  ?'Enter your scrambled 2×2 cube by changing the stickers that differ. Choose a colour, click the matching stickers on the 3D model, and use the view buttons or arrow keys to reach all six faces. Hold your real cube with white on top, green in front and red on the right.'
+  :'The cube starts with its six normal Rubik’s Cube colours. Choose a colour, then click only the stickers whose colours are different on your scrambled cube. Each click changes that sticker on the 3D model immediately. Use ← → ↑ ↓ to rotate the whole cube and reveal the other faces. For the standard colour layout, hold your real cube with white on top, green in front and red on the right.';
+
+ const tips=document.querySelectorAll('.tip');
+
+ tips[0].innerHTML=is2x2
+  ?'<strong>How to enter it:</strong> A 2×2 cube has no centre stickers. Keep the standard orientation: white on top, green in front and red on the right. Change only the stickers that differ from your real cube.'
+  :'<strong>How to enter it:</strong> The 3D cube starts solved and fully coloured. Select a colour and click a sticker only when that sticker is a different colour on your real scrambled cube. You do not need to repaint stickers that already match. Rotate the cube to reach all six faces. Keep the centre colours in the same positions as your real cube; they identify the faces.';
+
+ tips[1].innerHTML=is2x2
+  ?'<strong>Important:</strong> A 2×2 has no centre stickers. The solver checks the corner pieces and their orientation to determine whether your entered cube is physically possible.'
+  :'<strong>Important:</strong> For a standard cube, the usual centre layout is white opposite yellow, red opposite orange, and green opposite blue. This solver reads the centre colours you entered, so it can work out which face each colour belongs to.';
+
+ $('demo').classList.toggle('hide',is2x2);
+
+ updateColourCounts();
+ updateProgress();
+ setControlState(false);
+ updateViewIndicator();
+
+ $('canvasHint').textContent=is2x2
+  ?'Click stickers that differ from your real 2×2 cube · changes appear immediately'
+  :'Click any sticker that differs from your real cube · changes appear immediately';
+
+ setStatus(`Switched to the ${cubeSize}×${cubeSize} cube. The model has been reset to solved colours.`);
+});
 resetFacelets();renderPalette();updateColourCounts();buildCubeFromFacelets(facelets);updateProgress();setControlState(false);updateViewIndicator();setStatus('Ready: the cube starts with its normal colours. Change the stickers that differ from your scrambled cube.');
 </script>
 </body>
