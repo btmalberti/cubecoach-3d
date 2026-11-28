@@ -299,6 +299,32 @@ function getSolverString(){
  const counts={};for(const f of FACES)for(const c of facelets[f])counts[c]=(counts[c]||0)+1;for(const c of Object.keys(COLORS).filter(c=>c!==BLANK))if(counts[c]!==9)throw new Error(`${COLORS[c].name} appears ${counts[c]||0} times. Each colour must appear exactly 9 times.`);
  const colourToFace={};for(const f of FACES)colourToFace[facelets[f][4]]=f;return FACES.map(f=>facelets[f].map(c=>{if(!colourToFace[c])throw new Error('A sticker colour does not match one of the six centre colours.');return colourToFace[c];}).join('')).join('');
 }
+  function get2x2Faces(){
+ const faces={};
+
+ for(const f of FACES){
+  const stickers=facelets[f];
+
+  if(!Array.isArray(stickers)||stickers.length!==4){
+   throw new Error(`Face ${f} must have exactly 4 stickers.`);
+  }
+
+  const invalid=stickers.filter(c=>!COLORS[c]||c===BLANK).length;
+  if(invalid){
+   throw new Error(`Face ${f} has ${invalid} unpainted or invalid stickers.`);
+  }
+
+  faces[f]=[...stickers];
+ }
+
+ const validation=size2x2.validate(faces);
+
+ if(!validation.ok){
+  throw new Error(validation.errors.join(' '));
+ }
+
+ return faces;
+}
 function parseMove(move){const face=move[0],suffix=move.slice(1),axis={R:'x',L:'x',U:'y',D:'y',F:'z',B:'z'}[face],layer={R:1,L:-1,U:1,D:-1,F:1,B:-1}[face];let sign={R:-1,L:1,U:-1,D:1,F:-1,B:1}[face];if(suffix==="'")sign*=-1;return {face,axis,layer,sign,turns:suffix==='2'?2:1};}
 function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
 function simulateMovesOnStickers(startState,moves){
