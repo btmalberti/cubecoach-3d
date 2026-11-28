@@ -1218,27 +1218,31 @@ $('cubeSize').addEventListener('change',()=>{
 
  const is2x2=cubeSize===2;
 
- document.querySelector('.tag').textContent=is2x2
-  ?'2 × 2 × 2 · 3D INPUT + SOLVER'
-  :'3 × 3 × 3 · 3D INPUT + SOLVER';
+  const is2x2=cubeSize===2;
+ const is4x4=cubeSize===4;
+
+ document.querySelector('.tag').textContent=
+  `${cubeSize} × ${cubeSize} × ${cubeSize} · 3D INPUT + SOLVER`;
 
  document.querySelector('.intro').textContent=is2x2
   ?'Enter your scrambled 2×2 cube by changing the stickers that differ. Choose a colour, click the matching stickers on the 3D model, and use the view buttons or arrow keys to reach all six faces. Hold your real cube with white on top, green in front and red on the right.'
-  :'The cube starts with its six normal Rubik’s Cube colours. Choose a colour, then click only the stickers whose colours are different on your scrambled cube. Each click changes that sticker on the 3D model immediately. Use ← → ↑ ↓ to rotate the whole cube and reveal the other faces. For the standard colour layout, hold your real cube with white on top, green in front and red on the right.';
+  :is4x4
+   ?'Enter your scrambled 4×4 cube by changing the stickers that differ. Use the view buttons or arrow keys to reach all six faces. Keep the standard orientation: white on top, green in front and red on the right. The 4×4 has movable centre pieces, so keep this orientation while entering the colours.'
+   :'The cube starts with its six normal Rubik’s Cube colours. Choose a colour, then click only the stickers whose colours are different on your scrambled cube. Each click changes that sticker on the 3D model immediately. Use ← → ↑ ↓ to rotate the whole cube and reveal the other faces. For the standard colour layout, hold your real cube with white on top, green in front and red on the right.';
 
  const tips=document.querySelectorAll('.tip');
 
  tips[0].innerHTML=is2x2
   ?'<strong>How to enter it:</strong> A 2×2 cube has no centre stickers. Keep the standard orientation: white on top, green in front and red on the right. Change only the stickers that differ from your real cube.'
-  :'<strong>How to enter it:</strong> The 3D cube starts solved and fully coloured. Select a colour and click a sticker only when that sticker is a different colour on your real scrambled cube. You do not need to repaint stickers that already match. Rotate the cube to reach all six faces. Keep the centre colours in the same positions as your real cube; they identify the faces.';
+  :is4x4
+   ?'<strong>How to enter it:</strong> A 4×4 has no fixed centre stickers. Keep white on top, green in front and red on the right as you enter the colours. Change only stickers that differ from your real cube.'
+   :'<strong>How to enter it:</strong> The 3D cube starts solved and fully coloured. Select a colour and click a sticker only when that sticker is a different colour on your real scrambled cube. You do not need to repaint stickers that already match. Rotate the cube to reach all six faces. Keep the centre colours in the same positions as your real cube; they identify the faces.';
 
  tips[1].innerHTML=is2x2
   ?'<strong>Important:</strong> A 2×2 has no centre stickers. The solver checks the corner pieces and their orientation to determine whether your entered cube is physically possible.'
-  :'<strong>Important:</strong> For a standard cube, the usual centre layout is white opposite yellow, red opposite orange, and green opposite blue. This solver reads the centre colours you entered, so it can work out which face each colour belongs to.';
-
- $('demo').classList.toggle('hide',is2x2);
-
- updateColourCounts();
+  :is4x4
+   ?'<strong>Important:</strong> The 4×4 solver uses the standard colour layout: white opposite yellow, red opposite orange, and green opposite blue. Centre pieces can move, so do not use their current positions to decide which face is which.'
+   :'<strong>Important:</strong> For a standard cube, the usual centre layout is white opposite yellow, red opposite orange, and green opposite blue. This solver reads the centre colours you entered, so it can work out which face each colour belongs to.';
  updateProgress();
  setControlState(false);
  updateViewIndicator();
