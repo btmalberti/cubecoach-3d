@@ -459,14 +459,14 @@ function getFrontFace(){
 function updateViewIndicator(){
  const f=getFrontFace();
 
- if(cubeSize===2){
-  $('viewIndicator').textContent=`Currently showing: ${FACE_POSITION[f].toUpperCase()} face (${f})`;
-  return;
- }
+ i  if(cubeSize!==3){
+   $('viewIndicator').textContent=`Currently showing: ${FACE_POSITION[f].toUpperCase()} face (${f})`;
+   return;
+  }
 
- const colour=facelets[f]?.[4]||DEFAULT[f];
- const name=COLORS[colour]?.name||'Unknown';
- $('viewIndicator').textContent=`Currently showing: ${name.toUpperCase()} face (${f}) · ${FACE_POSITION[f]}`;
+  const colour=facelets[f]?.[4]||DEFAULT[f];
+  const name=COLORS[colour]?.name||'Unknown';
+  $('viewIndicator').textContent=`Currently showing: ${name.toUpperCase()} face (${f}) · ${FACE_POSITION[f]}`;
 }
 function animateCubeOrientation(axis,angle){
  if(navigationBusy||busy)return;
