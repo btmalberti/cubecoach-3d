@@ -899,18 +899,34 @@ function inverseMove(m){
 }
 const FACE_NAMES={R:'right',L:'left',U:'top',D:'bottom',F:'front',B:'back'};
 function describeMove(m){
- const face=m[0],suffix=m.slice(1);
+ const parsed=parseMove(m);
+ const suffix=m.endsWith('2')?'2':m.endsWith("'")?"'":'';
+
+ if(parsed.rotation){
+  const direction=suffix==="'"?'anticlockwise':'clockwise';
+  const amount=suffix==='2'?'180°':'90°';
+  return `Rotate the whole cube around the ${parsed.axis.toUpperCase()} axis ${amount} ${direction}.`;
+ }
+
+ const face=parsed.face;
  const faceName=cubeSize===3
   ?(COLORS[facelets[face]?.[4]]?.name||'unknown-colour')
   :FACE_POSITION[face];
 
- if(suffix==='2'){
-  return `Turn the ${faceName} face (${FACE_NAMES[face]}) 180° — a half-turn (two quarter-turns).`;
+ const turn=suffix==='2'
+  ?'180° — a half-turn (two quarter-turns)'
+  :`90° ${suffix==="'"?'anticlockwise':'clockwise'}`;
+
+ if(parsed.slice){
+  return `Turn the inner layer next to the ${faceName} face (${FACE_NAMES[face]}) ${turn}.`;
  }
 
- return `Turn the ${faceName} face (${FACE_NAMES[face]}) 90° ${suffix==="'"?'anticlockwise':'clockwise'}, looking straight at that face.`;
-}
+ if(parsed.wide){
+  return `Turn the two-layer wide section on the ${faceName} side (${FACE_NAMES[face]}) ${turn}.`;
+ }
 
+ return `Turn the ${faceName} face (${FACE_NAMES[face]}) ${turn}, looking straight at that face.`;
+}
 function updateProgress(){
  const total=solution.length;
  const stickerCount=stickersPerFace()*6;
