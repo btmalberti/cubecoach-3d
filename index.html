@@ -531,7 +531,25 @@ function updateProgress(){
  $('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';
 }
 function stopPlayback(){playing=false;clearTimeout(playTimer);$('play').textContent='▶ Play slowly';if(solution.length)setControlState(true);}
-function finishAndVerify(){stopPlayback();try{const modelOk=verifyRenderedStep(),finalState=getRenderedFacelets();const faceSolved=FACES.every(f=>finalState[f].every(c=>c===finalState[f][4]));if(!modelOk||!faceSolved){setStatus('The 3D model failed its final check. The cube has NOT been marked solved. Press Restart and try again.','error');return;}setStatus('Verified: all 54 stickers are in the correct solved positions. All 6 faces are solved! 🎉','good');}catch(e){setStatus(`Final 3D verification failed: ${e.message}`,'error');}}
+function finishAndVerify(){
+ stopPlayback();
+ try{
+  const modelOk=verifyRenderedStep();
+  const finalState=getRenderedFacelets();
+  const referenceIndex=cubeSize===3?4:0;
+  const faceSolved=FACES.every(f=>finalState[f].every(c=>c===finalState[f][referenceIndex]));
+  const stickerCount=stickersPerFace()*6;
+
+  if(!modelOk||!faceSolved){
+   setStatus('The 3D model failed its final check. The cube has NOT been marked solved. Press Restart and try again.','error');
+   return;
+  }
+
+  setStatus(`Verified: all ${stickerCount} stickers are in the correct solved positions. All 6 faces are solved! 🎉`,'good');
+ }catch(e){
+  setStatus(`Final 3D verification failed: ${e.message}`,'error');
+ }
+}
 function doForward(){if(busy||stepIndex>=solution.length)return;busy=true;setControlState(true);const move=solution[stepIndex];animateMove(move,()=>{stepIndex++;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The 3D animation did not match the verified move sequence. The cube has been stopped rather than showing a false result.','error');setControlState(false);return;}setControlState(true);if(stepIndex>=solution.length)finishAndVerify();else if(playing)playTimer=setTimeout(doForward,350);});}
 function doBackward(){if(busy||stepIndex<=0)return;busy=true;setControlState(true);const move=inverseMove(solution[stepIndex-1]);animateMove(move,()=>{stepIndex--;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The previous-move animation failed its 3D check. Press Restart to return to the starting cube.','error');setControlState(false);return;}setControlState(true);});}
 $('solve').addEventListener('click',()=>{
