@@ -476,12 +476,60 @@ function animateMove(move,done){
 function inverseMove(m){if(m.endsWith('2'))return m;if(m.endsWith("'"))return m[0];return m[0]+"'";}
 const FACE_NAMES={R:'right',L:'left',U:'top',D:'bottom',F:'front',B:'back'};
 function describeMove(m){
- const face=m[0],suffix=m.slice(1),centre=facelets[face]?.[4],colour=COLORS[centre]?.name||'unknown-colour';
- if(suffix==='2')return `Turn the ${colour} face (${FACE_NAMES[face]}) 180° — a half-turn (two quarter-turns).`;
- return `Turn the ${colour} face (${FACE_NAMES[face]}) 90° ${suffix==="'"?'anticlockwise':'clockwise'}, looking straight at that face.`;
+ const face=m[0],suffix=m.slice(1);
+ const faceName=cubeSize===3
+  ?(COLORS[facelets[face]?.[4]]?.name||'unknown-colour')
+  :FACE_POSITION[face];
+
+ if(suffix==='2'){
+  return `Turn the ${faceName} face (${FACE_NAMES[face]}) 180° — a half-turn (two quarter-turns).`;
+ }
+
+ return `Turn the ${faceName} face (${FACE_NAMES[face]}) 90° ${suffix==="'"?'anticlockwise':'clockwise'}, looking straight at that face.`;
 }
-function updateProgress(){const total=solution.length;$('counter').textContent=total?`${stepIndex} / ${total} moves`:(alreadySolved?'Already solved':(editing?'Input mode':'Ready'));$('stepCount').textContent=`${stepIndex} / ${total} moves completed`;$('bar').style.width=total?`${stepIndex/total*100}%`:'0%';if(!total){$('moveNumber').textContent=alreadySolved?'0 moves needed':'Ready for your colours';$('move').textContent=alreadySolved?'SOLVED! 🎉':'3D CUBE';$('move').style.color=alreadySolved?'var(--green)':'var(--cyan)';$('instruction').textContent=alreadySolved?'Your cube is already completely solved. No turns are needed.':'Change the stickers that differ from your scrambled cube, then press “Solve this cube”.';$('detail').textContent=alreadySolved?'All six faces are already uniform.':'The app will find a fast, near-optimal solution and verify all 54 stickers.';return;}if(stepIndex>=total){$('moveNumber').textContent=`${total} / ${total} moves completed`;$('move').textContent='SOLVED! 🎉';$('move').style.color='var(--green)';$('instruction').textContent='All six faces are solved.';$('detail').textContent='The animated 3D cube has passed the final 54-sticker check.';return;}const m=solution[stepIndex],moveColour=facelets[m[0]][4],colourName=COLORS[moveColour].name.toUpperCase();$('moveNumber').textContent=`Move ${stepIndex+1} of ${total}`;$('move').textContent=`${m} · ${colourName}`;$('move').style.color=COLORS[moveColour].hex;$('instruction').textContent=describeMove(m);$('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';}
-function setControlState(enabled){$('previous').disabled=!enabled||stepIndex===0||busy;$('play').disabled=!enabled||busy;$('next').disabled=!enabled||stepIndex>=solution.length||busy;$('pause').disabled=!enabled||!playing;$('restart').disabled=!enabled||busy;}
+
+function updateProgress(){
+ const total=solution.length;
+ const stickerCount=stickersPerFace()*6;
+
+ $('counter').textContent=total?`${stepIndex} / ${total} moves`:(alreadySolved?'Already solved':(editing?'Input mode':'Ready'));
+ $('stepCount').textContent=`${stepIndex} / ${total} moves completed`;
+ $('bar').style.width=total?`${stepIndex/total*100}%`:'0%';
+
+ if(!total){
+  $('moveNumber').textContent=alreadySolved?'0 moves needed':'Ready for your colours';
+  $('move').textContent=alreadySolved?'SOLVED! 🎉':'3D CUBE';
+  $('move').style.color=alreadySolved?'var(--green)':'var(--cyan)';
+  $('instruction').textContent=alreadySolved?'Your cube is already completely solved. No turns are needed.':'Change the stickers that differ from your scrambled cube, then press “Solve this cube”.';
+  $('detail').textContent=alreadySolved?'All six faces are already uniform.':`The app will find a solution and verify all ${stickerCount} stickers.`;
+  return;
+ }
+
+ if(stepIndex>=total){
+  $('moveNumber').textContent=`${total} / ${total} moves completed`;
+  $('move').textContent='SOLVED! 🎉';
+  $('move').style.color='var(--green)';
+  $('instruction').textContent='All six faces are solved.';
+  $('detail').textContent=`The animated 3D cube has passed the final ${stickerCount}-sticker check.`;
+  return;
+ }
+
+ const m=solution[stepIndex];
+ const face=m[0];
+ const moveLabel=cubeSize===3
+  ?COLORS[facelets[face][4]].name.toUpperCase()
+  :FACE_POSITION[face].toUpperCase();
+
+ const moveColor=cubeSize===3
+  ?COLORS[facelets[face][4]].hex
+  :'var(--cyan)';
+
+ $('moveNumber').textContent=`Move ${stepIndex+1} of ${total}`;
+ $('move').textContent=`${m} · ${moveLabel}`;
+ $('move').style.color=moveColor;
+ $('instruction').textContent=describeMove(m);
+ $('detail').textContent='Follow the highlighted layer turn on the cube. The next move starts after this turn finishes. Use ← → ↑ ↓ to rotate the whole cube and inspect another face without changing the solution.';
+}
 function stopPlayback(){playing=false;clearTimeout(playTimer);$('play').textContent='▶ Play slowly';if(solution.length)setControlState(true);}
 function finishAndVerify(){stopPlayback();try{const modelOk=verifyRenderedStep(),finalState=getRenderedFacelets();const faceSolved=FACES.every(f=>finalState[f].every(c=>c===finalState[f][4]));if(!modelOk||!faceSolved){setStatus('The 3D model failed its final check. The cube has NOT been marked solved. Press Restart and try again.','error');return;}setStatus('Verified: all 54 stickers are in the correct solved positions. All 6 faces are solved! 🎉','good');}catch(e){setStatus(`Final 3D verification failed: ${e.message}`,'error');}}
 function doForward(){if(busy||stepIndex>=solution.length)return;busy=true;setControlState(true);const move=solution[stepIndex];animateMove(move,()=>{stepIndex++;busy=false;updateProgress();let match=false;try{match=verifyRenderedStep();}catch(e){}if(!match){stopPlayback();setStatus('The 3D animation did not match the verified move sequence. The cube has been stopped rather than showing a false result.','error');setControlState(false);return;}setControlState(true);if(stepIndex>=solution.length)finishAndVerify();else if(playing)playTimer=setTimeout(doForward,350);});}
