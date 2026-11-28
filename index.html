@@ -557,17 +557,26 @@ function parseMove(move){
 }
 function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
 function simulateMovesOnStickers(startState,moves){
- const size=cubeSize,stickers=[];
+ const size=cubeSize;
+ const stickers=[];
+ const offset=(size-1)/2;
 
  for(const f of FACES){
   const g=GEOM[f];
+
   for(let i=0;i<size*size;i++){
-   const row=Math.floor(i/size),col=i%size;
-   const offset=size===3?1:0.5;
-   const colPos=size===3?col-1:col*2-1;
-   const rowPos=size===3?row-1:row*2-1;
-   const pos=g.n.map((v,k)=>v+g.right[k]*colPos+g.down[k]*rowPos);
-   stickers.push({pos,normal:[...g.n],colour:startState[f][i]});
+   const row=Math.floor(i/size);
+   const col=i%size;
+
+   const pos=size===2
+    ?g.n.map((v,k)=>v+g.right[k]*(col*2-1)+g.down[k]*(row*2-1))
+    :g.n.map((v,k)=>v*offset+g.right[k]*(col-offset)+g.down[k]*(row-offset));
+
+   stickers.push({
+    pos,
+    normal:[...g.n],
+    colour:startState[f][i]
+   });
   }
  }
 
@@ -576,7 +585,31 @@ function simulateMovesOnStickers(startState,moves){
   const axisIndex={x:0,y:1,z:2}[parsed.axis];
 
   for(const sticker of stickers){
-   if(sticker.pos[axisIndex]!==parsed.layer)continue;
+   const coordinate=sticker.pos[axisIndex];
+
+   let selected=false;
+
+   if(parsed.rotation){
+    selected=true;
+   }else if(size===4){
+    const outer=parsed.layer*1.5;
+    const inner=parsed.layer*0.5;
+
+    if(parsed.slice){
+     selected=Math.abs(coordinate-inner)<0.001;
+    }else if(parsed.wide){
+     selected=
+      Math.abs(coordinate-outer)<0.001||
+      Math.abs(coordinate-inner)<0.001;
+    }else{
+     selected=Math.abs(coordinate-outer)<0.001;
+    }
+   }else{
+    selected=Math.abs(coordinate-parsed.layer)<0.001;
+   }
+
+   if(!selected)continue;
+
    for(let t=0;t<parsed.turns;t++){
     sticker.pos=rotateQuarter(sticker.pos,parsed.axis,parsed.sign);
     sticker.normal=rotateQuarter(sticker.normal,parsed.axis,parsed.sign);
@@ -585,20 +618,35 @@ function simulateMovesOnStickers(startState,moves){
  }
 
  const normalFace={};
- for(const f of FACES)normalFace[GEOM[f].n.join(',')]=f;
+ for(const f of FACES){
+  normalFace[GEOM[f].n.join(',')]=f;
+ }
 
  const result={};
- for(const f of FACES)result[f]=Array(size*size).fill(null);
+ for(const f of FACES){
+  result[f]=Array(size*size).fill(null);
+ }
 
  for(const sticker of stickers){
   const f=normalFace[sticker.normal.join(',')];
+
   if(!f)throw new Error('Internal sticker-check error.');
 
   const g=GEOM[f];
   const colDot=sticker.pos.reduce((sum,v,k)=>sum+v*g.right[k],0);
   const rowDot=sticker.pos.reduce((sum,v,k)=>sum+v*g.down[k],0);
-  const col=size===3?Math.round(colDot)+1:Math.round((colDot+1)/2);
-  const row=size===3?Math.round(rowDot)+1:Math.round((rowDot+1)/2);
+
+  const col=size===2
+   ?Math.round((colDot+1)/2)
+   :Math.round(colDot+offset);
+
+  const row=size===2
+   ?Math.round((rowDot+1)/2)
+   :Math.round(rowDot+offset);
+
+  if(row<0||row>=size||col<0||col>=size){
+   throw new Error('Internal sticker-grid error.');
+  }
 
   result[f][row*size+col]=sticker.colour;
  }
