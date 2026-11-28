@@ -722,7 +722,9 @@ function parseMove(move){
    slice:Boolean(depthPrefix&&!wideSuffix),
    wide:Boolean(wideSuffix)
   };
- }function rotateQuarter(v,axis,sign){const [x,y,z]=v;if(axis==='x')return sign>0?[x,-z,y]:[x,z,-y];if(axis==='y')return sign>0?[z,y,-x]:[-z,y,x];return sign>0?[-y,x,z]:[y,-x,z];}
+ }
+
+ function rotateQuarter(v,axis,sign){
 function simulateMovesOnStickers(startState,moves){
  const size=cubeSize;
  const stickers=[];
