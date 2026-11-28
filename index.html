@@ -1049,6 +1049,83 @@ $('solve').addEventListener('click',()=>{
 
   return;
  }
+
+ if(cubeSize===4){
+  const changedCount=FACES.reduce(
+   (n,f)=>n+facelets[f].filter((c,i)=>c!==DEFAULT[f]).length,
+   0
+  );
+
+  if(changedCount===0){
+   setStatus('No scrambled colours have been entered yet. Change the stickers to match your scrambled 4×4 cube, then try again.','error');
+   return;
+  }
+
+  $('solve').disabled=true;
+  setControlState(false);
+  setStatus('Checking all 96 stickers and asking the 4×4 solving engine…');
+
+  setTimeout(async()=>{
+   try{
+    const faces=get4x4Faces();
+    const moves=await request4x4Solution(faces);
+
+    if(!Array.isArray(moves)||moves.some(move=>typeof move!=='string')){
+     throw new Error('The 4×4 solver returned an invalid move list.');
+    }
+
+    const simulated=simulateMovesOnStickers(facelets,moves);
+    const solved=FACES.every(f=>
+     simulated[f].every(c=>c===simulated[f][0])
+    );
+
+    if(!solved){
+     throw new Error('The independent 4×4 move check did not end with six uniform faces. No animation was started.');
+    }
+
+    buildCubeFromFacelets(facelets);
+
+    if(!statesMatch(facelets,getRenderedFacelets())){
+     throw new Error('The 3D cube display does not match the entered 4×4 stickers.');
+    }
+
+    solution=moves;
+    stepIndex=0;
+    editing=false;
+    alreadySolved=moves.length===0;
+
+    $('edit').classList.remove('hide');
+    $('canvasHint').textContent='The same 3D cube is performing the 4×4 solution, including wide and inner-layer turns.';
+
+    setStatus(solution.length
+     ?`4×4 solution found and independently checked: ${solution.length} moves. Starting the 3D animation…`
+     :'Your 4×4 cube is already solved. No moves are needed.','good');
+
+    $('solution').textContent=solution.length
+     ?`CHECKED 4×4 SOLUTION · ${solution.length} moves\n`+solution.join('   ')
+     :'Already solved — no moves needed.';
+
+    updateProgress();
+    setControlState(solution.length>0);
+    $('restart').disabled=!solution.length;
+
+    if(solution.length){
+     playing=true;
+     $('play').textContent='▶ Playing';
+     setControlState(true);
+     setTimeout(()=>{if(playing)doForward();},300);
+    }else{
+     setControlState(false);
+    }
+   }catch(e){
+    setStatus(e.message||'The 4×4 cube could not be solved. Check the stickers you painted.','error');
+   }finally{
+    $('solve').disabled=false;
+   }
+  },50);
+
+  return;
+ }
  const changedCount=FACES.reduce((n,f)=>n+facelets[f].filter((c,i)=>c!==DEFAULT[f]).length,0);
  if(changedCount===0){setStatus('No scrambled colours have been entered yet. This 3D cube is still in its normal solved colour layout. Change the stickers to match your scrambled cube, then try again.','error');return;}
  let faceString,colourToFace={};try{faceString=getSolverString();for(const f of FACES)colourToFace[facelets[f][4]]=f;}catch(e){setStatus(e.message,'error');return;}
