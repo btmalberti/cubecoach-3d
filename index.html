@@ -464,11 +464,10 @@ function buildCubeFromFacelets(state){
  stickerMap={};
 
  const lookup={};
- const coords=cubeSize===2
-  ?[-0.5,0.5]
-  :cubeSize===3
-   ?[-1,0,1]
-   :[-1.5,-0.5,0.5,1.5];
+   const coords=Array.from(
+   {length:cubeSize},
+   (_,i)=>i-(cubeSize-1)/2
+  );
 
  const keyOf=p=>p.map(v=>Number(v.toFixed(2))).join(',');
 
