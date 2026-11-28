@@ -109,9 +109,16 @@ let selected='W',facelets={},solution=[],stepIndex=0,playing=false,busy=false,pl
 let cubies=[],stickerMeshes=[],stickerMap={},dragging=false,pointerStart=null,lastPointer=null,alreadySolved=false;
 const palette=$('palette'),status=$('status');
 function stickersPerFace(){return cubeSize*cubeSize;}
+
 function resetFacelets(){
  facelets={};
- function updateColourCounts(){
+ for(const f of FACES){
+  facelets[f]=Array(stickersPerFace()).fill(DEFAULT[f]);
+ }
+ alreadySolved=false;
+}
+
+function updateColourCounts(){
  const perFace=stickersPerFace(),counts={};
  let changed=0;
  for(const f of FACES)for(let i=0;i<perFace;i++){
@@ -123,13 +130,22 @@ function resetFacelets(){
   .map(c=>`${COLORS[c].name}: ${counts[c]||0}/${perFace}`);
  $('counts').textContent=`Changed stickers: ${changed} · `+parts.join(' · ');
 }
- alreadySolved=false;
-}
-function resetFacelets(){facelets={};for(const f of FACES)facelets[f]=Array(9).fill(DEFAULT[f]);alreadySolved=false;}
+
 function vec(a){return new THREE.Vector3(a[0],a[1],a[2]);}
-function renderPalette(){palette.innerHTML='';for(const [code,data] of Object.entries(COLORS).filter(([code])=>code!==BLANK)){ const b=document.createElement('button');b.className='swatch'+(selected===code?' active':'');b.style.background=data.hex;b.setAttribute('aria-pressed',selected===code?'true':'false');b.innerHTML=`<span class="dot" style="background:${data.hex}"></span>${data.name}`;b.addEventListener('click',()=>{selected=code;renderPalette()});palette.appendChild(b);}if($('brushState'))$('brushState').textContent=`Selected paint colour: ${COLORS[selected].name} · click a sticker on the 3D cube`;}
-function updateColourCounts(){const counts={};let changed=0;for(const f of FACES)for(let i=0;i<9;i++){const c=facelets[f][i];counts[c]=(counts[c]||0)+1;if(c!==DEFAULT[f])changed++;}const parts=Object.keys(COLORS).filter(c=>c!==BLANK).map(c=>`${COLORS[c].name}: ${counts[c]||0}/9`);$('counts').textContent=`Changed stickers: ${changed}  ·  `+parts.join('  ·  '); }
-function stickerRotation(face){const r=GEOM[face].rot;return new THREE.Euler(r[0],r[1],r[2]);}
+
+function renderPalette(){
+ palette.innerHTML='';
+ for(const [code,data] of Object.entries(COLORS).filter(([code])=>code!==BLANK)){
+  const b=document.createElement('button');
+  b.className='swatch'+(selected===code?' active':'');
+  b.style.background=data.hex;
+  b.setAttribute('aria-pressed',selected===code?'true':'false');
+  b.innerHTML=`<span class="dot" style="background:${data.hex}"></span>${data.name}`;
+  b.addEventListener('click',()=>{selected=code;renderPalette()});
+  palette.appendChild(b);
+ }
+ if($('brushState'))$('brushState').textContent=`Selected paint colour: ${COLORS[selected].name} · click a sticker on the 3D cube`;
+}function stickerRotation(face){const r=GEOM[face].rot;return new THREE.Euler(r[0],r[1],r[2]);}
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(0,0,8.2);camera.up.set(0,1,0);camera.lookAt(0,0,0);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.setClearColor(0x000000,0);renderer.outputColorSpace=THREE.SRGBColorSpace;$('scene').appendChild(renderer.domElement);
