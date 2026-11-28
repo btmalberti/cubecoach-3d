@@ -108,6 +108,25 @@ const $=id=>document.getElementById(id);
 let selected='W',facelets={},solution=[],stepIndex=0,playing=false,busy=false,playTimer=null,solverReady=false,animationVersion=0,editing=true;
 let cubies=[],stickerMeshes=[],stickerMap={},dragging=false,pointerStart=null,lastPointer=null,alreadySolved=false;
 const palette=$('palette'),status=$('status');
+  function setStatus(message,type='info'){
+ status.textContent=message;
+ const statusColours={
+  good:'var(--green)',
+  error:'var(--red)',
+  warn:'var(--gold)'
+ };
+ status.style.color=statusColours[type]||'var(--gold)';
+}
+
+function setControlState(enabled){
+ const hasSolution=solution.length>0;
+
+ $('previous').disabled=!enabled||!hasSolution||stepIndex<=0;
+ $('play').disabled=!enabled||!hasSolution||playing;
+ $('next').disabled=!enabled||!hasSolution||stepIndex>=solution.length;
+ $('pause').disabled=!enabled||!playing;
+ $('restart').disabled=!enabled||!hasSolution;
+}
 function stickersPerFace(){return cubeSize*cubeSize;}
 
 function resetFacelets(){
