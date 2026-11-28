@@ -101,7 +101,49 @@ main{max-width:1240px;margin:auto;padding:10px 22px 34px;display:grid;grid-templ
 .mode-card:hover{
  transform:translateY(-4px);
  border-color:var(--cyan);
+}/* 3D cube previews on the homepage */
+.cube-preview{
+ height:112px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ perspective:600px;
 }
+.cube-model{
+ position:relative;
+ width:84px;
+ height:84px;
+ transform-style:preserve-3d;
+ transform:rotateX(-25deg) rotateY(-35deg);
+}
+.cube-face{
+ position:absolute;
+ width:84px;
+ height:84px;
+ border:4px solid #101827;
+ border-radius:7px;
+ box-shadow:0 7px 14px #0005;
+ backface-visibility:hidden;
+ background-size:calc(100% / var(--count)) calc(100% / var(--count));
+ background-image:
+  linear-gradient(90deg,#101827 2px,transparent 2px),
+  linear-gradient(#101827 2px,transparent 2px);
+}
+.cube-front{
+ background-color:#21a66a;
+ transform:translateZ(42px);
+}
+.cube-right{
+ background-color:#dc423c;
+ transform:rotateY(90deg) translateZ(42px);
+}
+.cube-top{
+ background-color:#f3f5ef;
+ transform:rotateX(90deg) translateZ(42px);
+}
+.cube-2{--count:2}
+.cube-3{--count:3}
+.cube-4{--count:4}
 .mode-card:focus-visible{
  outline:3px solid var(--cyan);
  outline-offset:4px;
