@@ -889,6 +889,28 @@ $('cubeSize').addEventListener('change',()=>{
 
  setStatus(`Switched to the ${cubeSize}×${cubeSize} cube. The model has been reset to solved colours.`);
 });
+  // Homepage navigation
+document.querySelectorAll('[data-cube-size]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const selectedSize=button.dataset.cubeSize;
+
+  $('cubeSize').value=selectedSize;
+  $('cubeSize').dispatchEvent(new Event('change'));
+
+  $('homeScreen').classList.add('hide');
+  $('solverScreen').classList.remove('hide');
+
+  requestAnimationFrame(setViewSize);
+ });
+});
+
+// Return to the homepage
+$('backHome').addEventListener('click',()=>{
+ stopPlayback();
+
+ $('solverScreen').classList.add('hide');
+ $('homeScreen').classList.remove('hide');
+});
 resetFacelets();renderPalette();updateColourCounts();buildCubeFromFacelets(facelets);updateProgress();setControlState(false);updateViewIndicator();setStatus('Ready: the cube starts with its normal colours. Change the stickers that differ from your scrambled cube.');
 </script>
 </body>
